@@ -1,8 +1,26 @@
 /**
+my_stream
+Copyright (C) 2023
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/**
  * @file my_stream.c
  * @author Simone Riva (you@domain.com)
  * @brief
- * @version 0.1
+ * @version 0.5
  * @date 2023-12-16
  *
  * @copyright Copyright (c) 2023
@@ -19,6 +37,8 @@
 #define DEFAULT_TEST_SIZE 50000000
 
 #define VECTOR_LEN 4
+
+#define BENCHMARK_REPETITIONS 50
 
 #define VERBOSE
 #undef VERBOSE
@@ -229,7 +249,7 @@ double copy_benchmark(const size_t vec_size, const int nr_cpu,
  * @param arg_void
  * @return void*
  */
-void *saxpy_thread(void *arg_void) {
+void *axpy_thread(void *arg_void) {
 
   struct streams_args *threads_args = (struct streams_args *)arg_void;
 
@@ -280,8 +300,8 @@ void *saxpy_thread(void *arg_void) {
  * @param threads_args
  * @return double
  */
-double saxpy_benchmark(const size_t vec_size, const int nr_cpu,
-                       struct streams_args *threads_args) {
+double axpy_benchmark(const size_t vec_size, const int nr_cpu,
+                      struct streams_args *threads_args) {
 
   // make a vector of pthreads
   pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
@@ -290,7 +310,7 @@ double saxpy_benchmark(const size_t vec_size, const int nr_cpu,
   sem_init(&semaphore, 0, nr_cpu);
 
   for (int i = 0; i < nr_cpu; i++) {
-    pthread_create(&threads[i], NULL, saxpy_thread, (void *)(&threads_args[i]));
+    pthread_create(&threads[i], NULL, axpy_thread, (void *)(&threads_args[i]));
   }
 
   for (int i = 0; i < nr_cpu; i++) {
@@ -341,6 +361,7 @@ int main(int argc, char **argv) {
   printf("Mb Vector size:            %f\n", Mb_vec_size);
   printf("Gb Vector size:            %f\n", Gb_vec_size);
   printf("Gb Total allocated memory: %f\n", Gb_vec_size * 4);
+  printf("Repetitions:               %d\n", BENCHMARK_REPETITIONS);
   printf("-----------------------------------------------------------\n\n");
 
   // malloc a aligned to 4 * sizeof(float_type)
@@ -375,37 +396,51 @@ int main(int argc, char **argv) {
     th_args[i].end_index = (i + 1) * batch_vec_size;
   }
 
-  double average_saxpy_time = saxpy_benchmark(vec_size, n_cpu, th_args);
+  double consume = 0.0;
+  double average_axpy_time = 0.0;
 
-  double memory_streamed_saxpy_Mb =
-      (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0);
-  double memory_streamed_saxpy_Gb =
+  for (int i = 0; i < BENCHMARK_REPETITIONS; i++) {
+    average_axpy_time += axpy_benchmark(vec_size, n_cpu, th_args);
+    consume += a[100] + b[1002] + c[1002] + d[1002];
+  }
+
+  average_axpy_time /= (double)(BENCHMARK_REPETITIONS);
+
+  double memory_streamed_axpy_Mb =
+      (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0) *
+      BENCHMARK_REPETITIONS;
+  double memory_streamed_axpy_Gb =
       (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
-      (1024.0 * 1024.0 * 1024.0);
+      (1024.0 * 1024.0 * 1024.0) * BENCHMARK_REPETITIONS;
 
-  double bandwidth_saxpy = (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
-                           (average_saxpy_time / 1000.0);
+  double bandwidth_axpy = (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
+                          (average_axpy_time / 1000.0);
 
-  double bandwidth_saxpy_MbS = bandwidth_saxpy / (1024.0 * 1024.0);
-  double bandwidth_saxpy_GbS = bandwidth_saxpy / (1024.0 * 1024.0 * 1024.0);
+  double bandwidth_axpy_MbS = bandwidth_axpy / (1024.0 * 1024.0);
+  double bandwidth_axpy_GbS = bandwidth_axpy / (1024.0 * 1024.0 * 1024.0);
 
 #ifdef VERBOSE
-  printf("Average Saxpy Time: %lf\n", average_saxpy_time);
-  printf("Bandwidth saxpy: %lf Mb/s\n", bandwidth_saxpy_MbS);
-  printf("Bandwidth saxpy: %lf Gb/s\n", bandwidth_saxpy_GbS);
+  printf("Average axpy Time: %lf\n", average_axpy_time);
+  printf("Bandwidth axpy: %lf Mb/s\n", bandwidth_axpy_MbS);
+  printf("Bandwidth axpy: %lf Gb/s\n", bandwidth_axpy_GbS);
 #endif // VERBOSE
 
-  double consume = a[100] + b[1002] + c[1002] + d[1002];
-  printf("Consume saxpy: %lf\n", consume);
-  printf("-----------------------------------------------------------\n\n");
+  // printf("Consume axpy: %lf\n", consume);
+  // printf("-----------------------------------------------------------\n\n");
 
-  double average_copy_time = copy_benchmark(vec_size, n_cpu, th_args);
+  double average_copy_time = 0.0;
+  for (int i = 0; i < BENCHMARK_REPETITIONS; i++) {
+    average_copy_time += copy_benchmark(vec_size, n_cpu, th_args);
+    consume += a[100] + b[1002] + c[1002] + d[1002];
+  }
+  average_copy_time /= (double)(BENCHMARK_REPETITIONS);
 
   double memory_streamed_copy_Mb =
-      (2.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0);
+      (2.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0) *
+      BENCHMARK_REPETITIONS;
   double memory_streamed_copy_Gb =
       (2.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
-      (1024.0 * 1024.0 * 1024.0);
+      (1024.0 * 1024.0 * 1024.0) * BENCHMARK_REPETITIONS;
 
   double bandwidth_copy = (2.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
                           (average_copy_time / 1000.0);
@@ -419,18 +454,20 @@ int main(int argc, char **argv) {
   printf("Bandwidth copy: %lf Gb/s\n", bandwidth_copy_GbS);
 #endif // VERBOSE
 
-  double consume_copy = a[100] + b[1002] + c[1002] + d[1002];
-  printf("Consume copy: %lf\n", consume_copy);
-  printf("-----------------------------------------------------------\n\n");
-
-  double average_fma_time = fma_benchmark(vec_size, n_cpu, th_args);
+  double average_fma_time = 0.0;
+  for (int i = 0; i < BENCHMARK_REPETITIONS; i++) {
+    average_fma_time += fma_benchmark(vec_size, n_cpu, th_args);
+    consume += a[100] + b[1002] + c[1002] + d[1002];
+  }
+  average_fma_time /= (double)(BENCHMARK_REPETITIONS);
 
   double memory_streamed_fma_Mb =
-      (4.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0);
+      (4.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0) *
+      BENCHMARK_REPETITIONS;
 
   double memory_streamed_fma_Gb =
       (4.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
-      (1024.0 * 1024.0 * 1024.0);
+      (1024.0 * 1024.0 * 1024.0) * BENCHMARK_REPETITIONS;
 
   double bandwidth_fma = (4.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
                          (average_fma_time / 1000.0);
@@ -444,17 +481,20 @@ int main(int argc, char **argv) {
   printf("Bandwidth fma: %lf Gb/s\n", bandwidth_fma_GbS);
 #endif // VERBOSE
 
-  double consume_fma = a[100] + b[1002] + c[1002] + d[1002];
-  printf("Consume fma: %lf\n", consume_fma);
-  printf("-----------------------------------------------------------\n\n");
+  printf("consume %f\n", consume);
+
+  printf("---------------------------------------------------------------------"
+         "\n\n");
 
   printf("Results:\n");
-  printf("-----------------------------------------------------------\n\n");
+  printf("---------------------------------------------------------------------"
+         "\n\n");
   printf("Benchmark:      Mb/s           Gb/s          Memory Streamed [Mb]\n");
-  printf("-----------------------------------------------------------\n");
-  printf("Saxpy:          %5.2lf       %.2lf         %lf\n", //
-         bandwidth_saxpy_MbS,                                //
-         bandwidth_saxpy_GbS, memory_streamed_saxpy_Mb);     //
+  printf("---------------------------------------------------------------------"
+         "\n");
+  printf("Axpy:           %5.2lf       %.2lf         %lf\n", //
+         bandwidth_axpy_MbS,                                //
+         bandwidth_axpy_GbS, memory_streamed_axpy_Mb);      //
 
   printf("Copy:           %5.2lf       %.2lf         %lf\n", //
          bandwidth_copy_MbS,                                 //
@@ -464,7 +504,8 @@ int main(int argc, char **argv) {
          bandwidth_fma_MbS,                                  //
          bandwidth_fma_GbS, memory_streamed_fma_Mb);         //
 
-  printf("-----------------------------------------------------------\n\n");
+  printf("---------------------------------------------------------------------"
+         "\n\n");
 
   free(a);
   free(b);
