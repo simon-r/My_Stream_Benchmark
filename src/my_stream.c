@@ -492,15 +492,15 @@ int main(int argc, char **argv) {
   printf("Benchmark:      Mb/s           Gb/s          Memory Streamed [Mb]\n");
   printf("---------------------------------------------------------------------"
          "\n");
-  printf("Axpy:           %5.2lf       %.2lf         %lf\n", //
+  printf("Axpy:           %.2lf       %.2lf         %lf\n", //
          bandwidth_axpy_MbS,                                //
          bandwidth_axpy_GbS, memory_streamed_axpy_Mb);      //
 
-  printf("Copy:           %5.2lf       %.2lf         %lf\n", //
+  printf("Copy:           %.2lf       %.2lf         %lf\n", //
          bandwidth_copy_MbS,                                 //
          bandwidth_copy_GbS, memory_streamed_copy_Mb);       //
 
-  printf("FMA:            %5.2lf       %.2lf         %lf\n", //
+  printf("FMA:            %.2lf       %.2lf         %lf\n", //
          bandwidth_fma_MbS,                                  //
          bandwidth_fma_GbS, memory_streamed_fma_Mb);         //
 
