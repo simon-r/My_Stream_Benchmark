@@ -1,8 +1,7 @@
 # My Stream Benchmark
 -------------------------
 
-This program, "my_stream.c," is designed to benchmark the memory bandwidth (in Mb/s and Gb/s).
-It evaluates three "memory bound" vector operations: Axpy, Copy, and FMA (fused multiply-add).
+This program, "my_stream.c", is designed to benchmark the memory bandwidth (in Mb/s and Gb/s). In order to measure the bandwidth, it executes three "memory bound" vector operations: Axpy, Copy, and FMA (fused multiply-add).
 
 ### Key Components:
 
