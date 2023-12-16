@@ -2,8 +2,9 @@
 -------------------------
 
 This program, "my_stream.c," is designed to benchmark the memory bandwidth (in Mb/s and Gb/s).
-It evaluates three operations memory bound vector operations: Axpy, Copy, and FMA (fused multiply-add).
-Key Components:
+It evaluates three "memory bound" vector operations: Axpy, Copy, and FMA (fused multiply-add).
+
+### Key Components:
 
 * Libraries Included: OpenMP, pthread, semaphore, stdio, stdlib, time.
 * Data Types: It uses a typedef float_type as double.
