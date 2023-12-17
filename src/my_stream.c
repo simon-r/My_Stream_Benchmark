@@ -288,8 +288,6 @@ void *add_mult_thread(void *arg_void) {
 
   struct streams_args *threads_args = (struct streams_args *)arg_void;
 
-  float_type aa = 2.55;
-
   vector_type *a_vec =
       (vector_type *)(threads_args->a + threads_args->start_index);
   vector_type *b_vec =
@@ -350,6 +348,7 @@ void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
  * @return int
  */
 int main(int argc, char **argv) {
+
   printf("Start My Stream\n------------------------\n\n");
 
   size_t vec_size = DEFAULT_TEST_SIZE;
