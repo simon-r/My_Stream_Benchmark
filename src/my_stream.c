@@ -32,6 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <semaphore.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #define DEFAULT_TEST_SIZE 50000000
@@ -46,6 +47,38 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 typedef double float_type;
 
 sem_t semaphore;
+
+char *find_command_line_arg_value(int argc, char *argv[], const char *arg) {
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], arg) == 0) {
+      // Check if the next argument exists and is not another command
+      if (i + 1 < argc && argv[i + 1][0] != '-') {
+        return argv[i + 1]; // Return pointer to the value
+      } else {
+        return NULL; // No value or next argument is a command
+      }
+    }
+  }
+  return NULL; // Argument not found
+}
+
+int flag_exists(int argc, char *argv[], const char *flag) {
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], flag) == 0) {
+      return 1; // Return 1 if the flag is found
+    }
+  }
+  return 0; // Return 0 if the flag is not found
+}
+
+int is_number(char *str) {
+  for (int i = 0; str[i] != '\0'; i++) {
+    if (str[i] < '0' || str[i] > '9') {
+      return 0;
+    }
+  }
+  return 1;
+}
 
 typedef float_type vector_type
     __attribute__((vector_size(VECTOR_LEN * sizeof(float_type)), //
@@ -76,6 +109,37 @@ struct streams_args {
 
   double clock;
 };
+
+#define MAKE_BENCHMARK_FUNC(FUNC_NAME, BENCHMARK_FUN)                          \
+  double FUNC_NAME(const size_t vec_size, const int nr_cpu,                    \
+                   struct streams_args *threads_args) {                        \
+                                                                               \
+    /** make a vector of pthreads*/                                            \
+    pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));                   \
+                                                                               \
+    /* Initialize semaphore*/                                                  \
+    sem_init(&semaphore, 0, nr_cpu);                                           \
+                                                                               \
+    for (int i = 0; i < nr_cpu; i++) {                                         \
+      pthread_create(&threads[i], NULL, BENCHMARK_FUN,                         \
+                     (void *)(&threads_args[i]));                              \
+    }                                                                          \
+                                                                               \
+    for (int i = 0; i < nr_cpu; i++) {                                         \
+      pthread_join(threads[i], NULL);                                          \
+    }                                                                          \
+                                                                               \
+    double average_time = 0;                                                   \
+                                                                               \
+    for (int i = 0; i < nr_cpu; i++) {                                         \
+      average_time += threads_args[i].clock;                                   \
+    }                                                                          \
+                                                                               \
+    average_time /= nr_cpu;                                                    \
+                                                                               \
+    free(threads);                                                             \
+    return average_time;                                                       \
+  }
 
 /**
  * @brief
@@ -129,42 +193,6 @@ void *fma_thread(void *arg_void) {
 /**
  * @brief
  *
- * @param vec_size
- * @param nr_cpu
- * @return double
- */
-double fma_benchmark(const size_t vec_size, const int nr_cpu,
-                     struct streams_args *threads_args) {
-
-  // make a vector of pthreads
-  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
-
-  // Initialize semaphore
-  sem_init(&semaphore, 0, nr_cpu);
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_create(&threads[i], NULL, fma_thread, (void *)(&threads_args[i]));
-  }
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_join(threads[i], NULL);
-  }
-
-  double average_time = 0;
-
-  for (int i = 0; i < nr_cpu; i++) {
-    average_time += threads_args[i].clock;
-  }
-
-  average_time /= nr_cpu;
-
-  free(threads);
-  return average_time;
-}
-
-/**
- * @brief
- *
  * @param arg_void
  * @return void*
  */
@@ -205,42 +233,6 @@ void *copy_thread(void *arg_void) {
   threads_args->clock = elapsed;
 
   return NULL;
-}
-
-/**
- * @brief
- *
- * @param vec_size
- * @param nr_cpu
- * @return double
- */
-double copy_benchmark(const size_t vec_size, const int nr_cpu,
-                      struct streams_args *threads_args) {
-
-  // make a vector of pthreads
-  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
-
-  // Initialize semaphore
-  sem_init(&semaphore, 0, nr_cpu);
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_create(&threads[i], NULL, copy_thread, (void *)(&threads_args[i]));
-  }
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_join(threads[i], NULL);
-  }
-
-  double average_time = 0;
-
-  for (int i = 0; i < nr_cpu; i++) {
-    average_time += threads_args[i].clock;
-  }
-
-  average_time /= nr_cpu;
-
-  free(threads);
-  return average_time;
 }
 
 /**
@@ -292,41 +284,62 @@ void *axpy_thread(void *arg_void) {
   return NULL;
 }
 
-/**
- * @brief
- *
- * @param vec_size
- * @param nr_cpu
- * @param threads_args
- * @return double
- */
-double axpy_benchmark(const size_t vec_size, const int nr_cpu,
-                      struct streams_args *threads_args) {
+void *add_mult_thread(void *arg_void) {
 
-  // make a vector of pthreads
-  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
+  struct streams_args *threads_args = (struct streams_args *)arg_void;
 
-  // Initialize semaphore
-  sem_init(&semaphore, 0, nr_cpu);
+  float_type aa = 2.55;
 
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_create(&threads[i], NULL, axpy_thread, (void *)(&threads_args[i]));
+  vector_type *a_vec =
+      (vector_type *)(threads_args->a + threads_args->start_index);
+  vector_type *b_vec =
+      (vector_type *)(threads_args->b + threads_args->start_index);
+
+  vector_type *c_vec =
+      (vector_type *)(threads_args->c + threads_args->start_index);
+  vector_type *d_vec =
+      (vector_type *)(threads_args->d + threads_args->start_index);
+
+  size_t size_vec =
+      (threads_args->end_index - threads_args->start_index) / VECTOR_LEN;
+
+  // start hi definition clock
+  struct timespec start, end;
+
+  // printf("size_vec %d\n", size_vec);
+
+  sem_wait(&semaphore);
+
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  for (int i = 0; i < size_vec; i++) {
+    d_vec[i] = a_vec[i] + b_vec[i];
+    c_vec[i] = a_vec[i] * b_vec[i];
   }
+  clock_gettime(CLOCK_MONOTONIC, &end);
 
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_join(threads[i], NULL);
-  }
+  // Calculate elapsed time in milliseconds
 
-  double average_time = 0;
+  double elapsed = (double)(end.tv_sec - start.tv_sec) *
+                   (double)1000LL; // Convert seconds to milliseconds
+  elapsed += (double)(end.tv_nsec - start.tv_nsec) /
+             (double)1000000LL; // Convert nanoseconds to milliseconds
 
-  for (int i = 0; i < nr_cpu; i++) {
-    average_time += threads_args[i].clock;
-  }
+  // printf("Elapsed time: %lf milliseconds\n", elapsed);
+  threads_args->clock = elapsed;
 
-  average_time /= nr_cpu;
+  return NULL;
+}
 
-  free(threads);
-  return average_time;
+MAKE_BENCHMARK_FUNC(axpy_benchmark, axpy_thread)
+
+MAKE_BENCHMARK_FUNC(copy_benchmark, copy_thread)
+
+MAKE_BENCHMARK_FUNC(fma_benchmark, fma_thread)
+
+MAKE_BENCHMARK_FUNC(add_mult_benchmark, add_mult_thread)
+
+void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
+  return (void *)aligned_alloc(__alignment, vector_len * type_size);
 }
 
 /**
@@ -340,39 +353,87 @@ int main(int argc, char **argv) {
   printf("Start My Stream\n------------------------\n\n");
 
   size_t vec_size = DEFAULT_TEST_SIZE;
+  int benchmark_repetitions = BENCHMARK_REPETITIONS;
 
-  if (argc >= 2) {
-    vec_size = atoi(argv[1]);
+  if (flag_exists(argc, argv, "-h") | flag_exists(argc, argv, "--help")) {
+
+    printf("Usage: %s [options]\n", argv[0]);
+    printf("Options:\n");
+    printf("  -h, --help                  Show this help message and exit.\n");
+    printf("  -s SIZE                     Size of the vector.\n");
+    printf("  -r REPETITIONS              Number of repetitions of each "
+           "benchmark.\n");
+
+    printf("\n");
+    printf("Description:\n");
+    printf("  This program,  \"my_stream\" "
+           ", is designed to benchmark the memory bandwidth (in Mb/s and "
+           "Gb/s). \n"
+           "  In order to measure the bandwidth, it executes four "
+           "\"memory bound\" vector operations: Axpy, Copy, FMA (fused "
+           "multiply-add), and Add Mult..\n"
+           "  Visit: https://github.com/simon-r/My_Stream_Benchmark \n");
+
+    printf("\n");
+    return 0;
   }
 
-  printf("Vector size: %lu\n", vec_size);
+  char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
+
+  if (vec_size_arg != NULL) {
+
+    if (is_number(vec_size_arg)) {
+      vec_size = strtoul(vec_size_arg, NULL, 10);
+      printf("User defined vector size: %lu\n", vec_size);
+    } else {
+      printf("Error: argv[1] is not numeric\n");
+      return 1;
+    }
+  }
+
+  char *benchmark_repetitions_arg =
+      find_command_line_arg_value(argc, argv, "-r");
+
+  if (benchmark_repetitions_arg != NULL) {
+    if (is_number(benchmark_repetitions_arg)) {
+      benchmark_repetitions = atoi(benchmark_repetitions_arg);
+      printf("User defined benchmark repetitions: %d\n", benchmark_repetitions);
+    } else {
+      printf("Error: argv -r is not numeric\n");
+      return 1;
+    }
+  }
 
   // get the number of cpu from open mp
-  const int n_cpu = omp_get_num_procs();
-  vec_size = vec_size / n_cpu;
-  vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * n_cpu;
+  const int nr_cpu = omp_get_num_procs();
+  vec_size = vec_size / nr_cpu;
+  vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * nr_cpu;
+
+  double to_Mb = (1024.0 * 1024.0);
+  double to_Gb = (1024.0 * 1024.0 * 1024.0);
 
   double bytes_vec_size = (double)(vec_size * sizeof(float_type));
-  double Mb_vec_size = bytes_vec_size / (1024.0 * 1024.0);
-  double Gb_vec_size = bytes_vec_size / (1024.0 * 1024.0 * 1024.0);
+  double Mb_vec_size = bytes_vec_size / to_Mb;
+  double Gb_vec_size = bytes_vec_size / to_Gb;
 
-  printf("Number of CPU:             %d\n", n_cpu);
+  printf("\n-----------------------------------------------------------\n");
+  printf("Number of CPU:             %d\n", nr_cpu);
   printf("Corrected vector size:     %lu\n", vec_size);
   printf("Mb Vector size:            %f\n", Mb_vec_size);
   printf("Gb Vector size:            %f\n", Gb_vec_size);
   printf("Gb Total allocated memory: %f\n", Gb_vec_size * 4);
-  printf("Repetitions:               %d\n", BENCHMARK_REPETITIONS);
+  printf("Repetitions:               %d\n", benchmark_repetitions);
   printf("-----------------------------------------------------------\n\n");
 
   // malloc a aligned to 4 * sizeof(float_type)
-  float_type *a = (float_type *)aligned_alloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size * sizeof(float_type));
-  float_type *b = (float_type *)aligned_alloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size * sizeof(float_type));
-  float_type *c = (float_type *)aligned_alloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size * sizeof(float_type));
-  float_type *d = (float_type *)aligned_alloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size * sizeof(float_type));
+  float_type *a = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              vec_size, sizeof(float_type));
+  float_type *b = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              vec_size, sizeof(float_type));
+  float_type *c = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              vec_size, sizeof(float_type));
 
   unsigned int r = 1;
   for (int i = 0; i < vec_size; i++) {
@@ -383,11 +444,11 @@ int main(int argc, char **argv) {
     d[i] = 0.0;
   }
 
-  struct streams_args *th_args = malloc(n_cpu * sizeof(struct streams_args));
+  struct streams_args *th_args = malloc(nr_cpu * sizeof(struct streams_args));
 
-  size_t batch_vec_size = vec_size / n_cpu;
+  size_t batch_vec_size = vec_size / nr_cpu;
 
-  for (int i = 0; i < n_cpu; i++) {
+  for (int i = 0; i < nr_cpu; i++) {
     th_args[i].a = a;
     th_args[i].b = b;
     th_args[i].c = c;
@@ -399,25 +460,25 @@ int main(int argc, char **argv) {
   double consume = 0.0;
   double average_axpy_time = 0.0;
 
-  for (int i = 0; i < BENCHMARK_REPETITIONS; i++) {
-    average_axpy_time += axpy_benchmark(vec_size, n_cpu, th_args);
+  for (int i = 0; i < benchmark_repetitions; i++) {
+    average_axpy_time += axpy_benchmark(vec_size, nr_cpu, th_args);
     consume += a[100] + b[1002] + c[1002] + d[1002];
   }
 
-  average_axpy_time /= (double)(BENCHMARK_REPETITIONS);
+  average_axpy_time /= (double)(benchmark_repetitions);
 
   double memory_streamed_axpy_Mb =
-      (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0) *
-      BENCHMARK_REPETITIONS;
+      (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
+      benchmark_repetitions;
   double memory_streamed_axpy_Gb =
-      (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
-      (1024.0 * 1024.0 * 1024.0) * BENCHMARK_REPETITIONS;
+      (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+      benchmark_repetitions;
 
-  double bandwidth_axpy = (3.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
+  double bandwidth_axpy = (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                           (average_axpy_time / 1000.0);
 
-  double bandwidth_axpy_MbS = bandwidth_axpy / (1024.0 * 1024.0);
-  double bandwidth_axpy_GbS = bandwidth_axpy / (1024.0 * 1024.0 * 1024.0);
+  double bandwidth_axpy_MbS = bandwidth_axpy / to_Mb;
+  double bandwidth_axpy_GbS = bandwidth_axpy / to_Gb;
 
 #ifdef VERBOSE
   printf("Average axpy Time: %lf\n", average_axpy_time);
@@ -429,24 +490,24 @@ int main(int argc, char **argv) {
   // printf("-----------------------------------------------------------\n\n");
 
   double average_copy_time = 0.0;
-  for (int i = 0; i < BENCHMARK_REPETITIONS; i++) {
-    average_copy_time += copy_benchmark(vec_size, n_cpu, th_args);
+  for (int i = 0; i < benchmark_repetitions; i++) {
+    average_copy_time += copy_benchmark(vec_size, nr_cpu, th_args);
     consume += a[100] + b[1002] + c[1002] + d[1002];
   }
-  average_copy_time /= (double)(BENCHMARK_REPETITIONS);
+  average_copy_time /= (double)(benchmark_repetitions);
 
   double memory_streamed_copy_Mb =
-      (2.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0) *
-      BENCHMARK_REPETITIONS;
+      (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
+      benchmark_repetitions;
   double memory_streamed_copy_Gb =
-      (2.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
-      (1024.0 * 1024.0 * 1024.0) * BENCHMARK_REPETITIONS;
+      (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+      benchmark_repetitions;
 
-  double bandwidth_copy = (2.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
+  double bandwidth_copy = (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                           (average_copy_time / 1000.0);
 
-  double bandwidth_copy_MbS = bandwidth_copy / (1024.0 * 1024.0);
-  double bandwidth_copy_GbS = bandwidth_copy / (1024.0 * 1024.0 * 1024.0);
+  double bandwidth_copy_MbS = bandwidth_copy / to_Mb;
+  double bandwidth_copy_GbS = bandwidth_copy / to_Gb;
 
 #ifdef VERBOSE
   printf("Average Copy Time: %lf\n", average_copy_time);
@@ -455,25 +516,25 @@ int main(int argc, char **argv) {
 #endif // VERBOSE
 
   double average_fma_time = 0.0;
-  for (int i = 0; i < BENCHMARK_REPETITIONS; i++) {
-    average_fma_time += fma_benchmark(vec_size, n_cpu, th_args);
+  for (int i = 0; i < benchmark_repetitions; i++) {
+    average_fma_time += fma_benchmark(vec_size, nr_cpu, th_args);
     consume += a[100] + b[1002] + c[1002] + d[1002];
   }
-  average_fma_time /= (double)(BENCHMARK_REPETITIONS);
+  average_fma_time /= (double)(benchmark_repetitions);
 
   double memory_streamed_fma_Mb =
-      (4.0 * batch_vec_size * n_cpu * sizeof(float_type)) / (1024.0 * 1024.0) *
-      BENCHMARK_REPETITIONS;
+      (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
+      benchmark_repetitions;
 
   double memory_streamed_fma_Gb =
-      (4.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
-      (1024.0 * 1024.0 * 1024.0) * BENCHMARK_REPETITIONS;
+      (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+      benchmark_repetitions;
 
-  double bandwidth_fma = (4.0 * batch_vec_size * n_cpu * sizeof(float_type)) /
+  double bandwidth_fma = (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                          (average_fma_time / 1000.0);
 
-  double bandwidth_fma_MbS = bandwidth_fma / (1024.0 * 1024.0);
-  double bandwidth_fma_GbS = bandwidth_fma / (1024.0 * 1024.0 * 1024.0);
+  double bandwidth_fma_MbS = bandwidth_fma / to_Mb;
+  double bandwidth_fma_GbS = bandwidth_fma / to_Gb;
 
 #ifdef VERBOSE
   printf("Average FMA Time: %lf\n", average_fma_time);
@@ -481,7 +542,37 @@ int main(int argc, char **argv) {
   printf("Bandwidth fma: %lf Gb/s\n", bandwidth_fma_GbS);
 #endif // VERBOSE
 
-  printf("consume %f\n", consume);
+  double average_add_mult_time = 0.0;
+  for (int i = 0; i < benchmark_repetitions; i++) {
+    average_add_mult_time += add_mult_benchmark(vec_size, nr_cpu, th_args);
+    consume += a[100] + b[1002] + c[1002] + d[1002];
+  }
+  average_add_mult_time /= (double)(benchmark_repetitions);
+
+  double memory_streamed_add_mult_Mb =
+      (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
+      benchmark_repetitions;
+
+  double memory_streamed_add_mult_Gb =
+      (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+      benchmark_repetitions;
+
+  double bandwidth_add_mult =
+      (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
+      (average_add_mult_time / 1000.0);
+
+  double bandwidth_add_mult_MbS = bandwidth_add_mult / to_Mb;
+  double bandwidth_add_mult_GbS = bandwidth_add_mult / to_Gb;
+
+#ifdef VERBOSE
+  printf("Average Add Mult Time: %lf\n", average_add_mult_time);
+  printf("Bandwidth add mult: %lf Mb/s\n", bandwidth_add_mult_MbS);
+  printf("Bandwidth add mult: %lf Gb/s\n", bandwidth_add_mult_GbS);
+#endif // VERBOSE
+
+  printf("-----------------------------------------------------------\n\n");
+
+  printf("consume %f (just an output)\n", consume);
 
   printf("---------------------------------------------------------------------"
          "\n\n");
@@ -489,20 +580,25 @@ int main(int argc, char **argv) {
   printf("Results:\n");
   printf("---------------------------------------------------------------------"
          "\n\n");
-  printf("Benchmark:      Mb/s           Gb/s          Memory Streamed [Mb]\n");
+  printf("Benchmark:             Mb/s                     Gb/s          Memory "
+         "Streamed [Mb]\n");
   printf("---------------------------------------------------------------------"
          "\n");
-  printf("Axpy:           %.2lf       %.2lf         %lf\n", //
-         bandwidth_axpy_MbS,                                //
-         bandwidth_axpy_GbS, memory_streamed_axpy_Mb);      //
+  printf("Axpy:           %15.2lf       %15.2lf         %lf\n", //
+         bandwidth_axpy_MbS,                                    //
+         bandwidth_axpy_GbS, memory_streamed_axpy_Mb);          //
 
-  printf("Copy:           %.2lf       %.2lf         %lf\n", //
-         bandwidth_copy_MbS,                                 //
-         bandwidth_copy_GbS, memory_streamed_copy_Mb);       //
+  printf("Copy:           %15.2lf       %15.2lf         %lf\n", //
+         bandwidth_copy_MbS,                                    //
+         bandwidth_copy_GbS, memory_streamed_copy_Mb);          //
 
-  printf("FMA:            %.2lf       %.2lf         %lf\n", //
-         bandwidth_fma_MbS,                                  //
-         bandwidth_fma_GbS, memory_streamed_fma_Mb);         //
+  printf("FMA:            %15.2lf       %15.2lf         %lf\n", //
+         bandwidth_fma_MbS,                                     //
+         bandwidth_fma_GbS, memory_streamed_fma_Mb);            //
+
+  printf("Add Mult:       %15.2lf       %15.2lf         %lf\n", //
+         bandwidth_add_mult_MbS,                                //
+         bandwidth_add_mult_GbS, memory_streamed_add_mult_Mb);  //
 
   printf("---------------------------------------------------------------------"
          "\n\n");
@@ -511,6 +607,7 @@ int main(int argc, char **argv) {
   free(b);
   free(c);
   free(d);
+  free(th_args);
 
   return 0;
 }

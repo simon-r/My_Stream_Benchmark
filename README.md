@@ -1,9 +1,10 @@
 # My Stream Benchmark
+
 -------------------------
 
-This program, "my_stream.c", is designed to benchmark the memory bandwidth (in Mb/s and Gb/s). In order to measure the bandwidth, it executes three "memory bound" vector operations: Axpy, Copy, and FMA (fused multiply-add).
+This program, "my_stream.c", is designed to benchmark the memory bandwidth (in Mb/s and Gb/s). In order to measure the bandwidth, it executes three "memory bound" vector operations: Axpy, Copy, FMA (fused multiply-add), and Add Mult.
 
-### Key Components:
+### Key Components
 
 * Libraries Included: OpenMP, pthread, semaphore, stdio, stdlib, time.
 * Data Types: It uses a typedef float_type as double.
@@ -22,6 +23,15 @@ This program, "my_stream.c", is designed to benchmark the memory bandwidth (in M
   3. FMA (Fused Multiply-Add):
         Performs a multiply-add operation on vectors.
         d[i] = a[i] * b[i] + c[i];
+
+  4. Add Mult (In this benchmark the amount of input and output data are equal):
+        adds and multiply two vectors,
+        d[i] = a[i] + b[i];
+        c[i] = a[i] * b[i];
+
+### Usage
+
+      my_stream.exe -s {vec_size}
 
 ### Benchmarking
 
@@ -43,6 +53,14 @@ Provides detailed information on vector sizes, CPU count, corrected
 vector sizes, memory sizes, and repetitions.
 Outputs average execution times, bandwidth, and memory streamed for
 Axpy, Copy, and FMA operations.
+
+### Tested compilers
+* GCC 13.2.1
+* CLANG 16.0.6
+* icx (intel oneAPI) 2023.2.0 (2023.2.0.20230622)
+
+### Change compiler
+      make CC={your_favorite_CC_compiler_cmd}
 
 ### Notes
 
