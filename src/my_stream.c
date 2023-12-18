@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define DEFAULT_TEST_SIZE 50000000
 
-#define VECTOR_LEN 4
+#define VECTOR_LEN 8
 
 #define BENCHMARK_REPETITIONS 50
 

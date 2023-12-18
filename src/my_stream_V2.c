@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define DEFAULT_TEST_SIZE 50000000
 
-#define VECTOR_LEN 4
+#define VECTOR_LEN 8
 
 #define BENCHMARK_REPETITIONS 50
 
@@ -45,6 +45,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #undef VERBOSE
 
 typedef double float_type;
+
+const double to_Mb = (1024.0 * 1024.0);
+const double to_Gb = (1024.0 * 1024.0 * 1024.0);
 
 char *find_command_line_arg_value(int argc, char *argv[], const char *arg) {
   for (int i = 1; i < argc; i++) {
@@ -100,6 +103,8 @@ struct streams_args {
   size_t size;
 
   double clock;
+  double bandwidth;
+
   double consume_out;
   size_t benchmark_repetitions;
 
@@ -117,6 +122,16 @@ double get_time(struct timespec start, struct timespec end) {
 
 void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
   return (void *)aligned_alloc(__alignment, vector_len * type_size);
+}
+
+double compute_bandwidth(const unsigned int nr_cpu,     //
+                         const unsigned int nr_streams, //
+                         const size_t batch_vec_size,   //
+                         const double average_time) {
+
+  return ((double)nr_streams * (double)batch_vec_size * (double)nr_cpu *
+          (double)sizeof(float_type)) /
+         (average_time / 1000.0);
 }
 
 /**
@@ -213,6 +228,11 @@ double execute_mt_fma_test(struct streams_args *th_args, int nr_cpu) {
   printf("FMA: %f ms\n", avg_time);
   printf("consume_out: %f\n", consume_out);
 
+  const double bw = compute_bandwidth(nr_cpu, 3, th_args[0].size, avg_time);
+
+  printf("Bandwidth: %f Mb/s\n", bw / to_Mb );
+  printf("Bandwidth: %f Gb/s\n", bw / to_Gb );
+
   free(threads);
 
   return avg_time;
@@ -291,9 +311,6 @@ int main(int argc, char **argv) {
   const int nr_cpu = omp_get_num_procs();
   vec_size = vec_size / nr_cpu;
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * nr_cpu;
-
-  double to_Mb = (1024.0 * 1024.0);
-  double to_Gb = (1024.0 * 1024.0 * 1024.0);
 
   double bytes_vec_size = (double)(vec_size * sizeof(float_type));
   double Mb_vec_size = bytes_vec_size / to_Mb;
