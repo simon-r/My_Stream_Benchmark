@@ -226,6 +226,7 @@ void *copy_thread(void *arg_void) {
 
   double elapsed = (double)(end.tv_sec - start.tv_sec) *
                    (double)1000LL; // Convert seconds to milliseconds
+
   elapsed += (double)(end.tv_nsec - start.tv_nsec) /
              (double)1000000LL; // Convert nanoseconds to milliseconds
 
@@ -245,7 +246,7 @@ void *axpy_thread(void *arg_void) {
 
   struct streams_args *threads_args = (struct streams_args *)arg_void;
 
-  float_type aa = 2.55;
+  float_type alpha = 2.55;
 
   vector_type *a_vec =
       (vector_type *)(threads_args->a + threads_args->start_index);
@@ -267,7 +268,7 @@ void *axpy_thread(void *arg_void) {
 
   clock_gettime(CLOCK_MONOTONIC, &start);
   for (int i = 0; i < size_vec; i++) {
-    d_vec[i] = aa * a_vec[i] + b_vec[i];
+    d_vec[i] = alpha * a_vec[i] + b_vec[i];
   }
   clock_gettime(CLOCK_MONOTONIC, &end);
 
@@ -469,9 +470,9 @@ int main(int argc, char **argv) {
   double memory_streamed_axpy_Mb =
       (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
       benchmark_repetitions;
-  double memory_streamed_axpy_Gb =
-      (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
-      benchmark_repetitions;
+  // double memory_streamed_axpy_Gb =
+  //     (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+  //     benchmark_repetitions;
 
   double bandwidth_axpy = (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                           (average_axpy_time / 1000.0);
@@ -498,9 +499,9 @@ int main(int argc, char **argv) {
   double memory_streamed_copy_Mb =
       (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
       benchmark_repetitions;
-  double memory_streamed_copy_Gb =
-      (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
-      benchmark_repetitions;
+  // double memory_streamed_copy_Gb =
+  //     (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+  //     benchmark_repetitions;
 
   double bandwidth_copy = (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                           (average_copy_time / 1000.0);
@@ -525,9 +526,9 @@ int main(int argc, char **argv) {
       (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
       benchmark_repetitions;
 
-  double memory_streamed_fma_Gb =
-      (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
-      benchmark_repetitions;
+  // double memory_streamed_fma_Gb =
+  //     (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+  //     benchmark_repetitions;
 
   double bandwidth_fma = (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                          (average_fma_time / 1000.0);
@@ -552,9 +553,9 @@ int main(int argc, char **argv) {
       (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Mb *
       benchmark_repetitions;
 
-  double memory_streamed_add_mult_Gb =
-      (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
-      benchmark_repetitions;
+  // double memory_streamed_add_mult_Gb =
+  //     (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) / to_Gb *
+  //     benchmark_repetitions;
 
   double bandwidth_add_mult =
       (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /

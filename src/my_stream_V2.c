@@ -35,6 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <time.h>
 
+#include "my_stream_utils.h"
+
 #define DEFAULT_TEST_SIZE 50000000
 
 #define VECTOR_LEN 8
@@ -46,58 +48,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 typedef double float_type;
 
-const double to_Mb = (1024.0 * 1024.0);
-const double to_Gb = (1024.0 * 1024.0 * 1024.0);
-
-char *find_command_line_arg_value(int argc, char *argv[], const char *arg) {
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], arg) == 0) {
-      // Check if the next argument exists and is not another command
-      if (i + 1 < argc && argv[i + 1][0] != '-') {
-        return argv[i + 1]; // Return pointer to the value
-      } else {
-        return NULL; // No value or next argument is a command
-      }
-    }
-  }
-  return NULL; // Argument not found
-}
-
-int flag_exists(int argc, char *argv[], const char *flag) {
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], flag) == 0) {
-      return 1; // Return 1 if the flag is found
-    }
-  }
-  return 0; // Return 0 if the flag is not found
-}
-
-int is_number(char *str) {
-  for (int i = 0; str[i] != '\0'; i++) {
-    if (str[i] < '0' || str[i] > '9') {
-      return 0;
-    }
-  }
-  return 1;
-}
-
 typedef float_type vector_type
     __attribute__((vector_size(VECTOR_LEN * sizeof(float_type)), //
                    aligned(sizeof(float_type))));                //
-
-/**
- * @brief
- *
- * @param seed
- * @return unsigned int
- */
-unsigned int generate_random_number(unsigned int seed) {
-  unsigned int magic = 214013;
-  unsigned int m = 1 << 31;
-  unsigned int a = 16807;
-
-  return (seed * a + magic) % m;
-}
 
 struct streams_args {
   size_t size;
@@ -111,27 +64,8 @@ struct streams_args {
   sem_t *semaphore;
 };
 
-double get_time(struct timespec start, struct timespec end) {
-  double elapsed = (double)(end.tv_sec - start.tv_sec) *
-                   (double)1000LL; // Convert seconds to milliseconds
-  elapsed += (double)(end.tv_nsec - start.tv_nsec) /
-             (double)1000000LL; // Convert nanoseconds to milliseconds
-
-  return elapsed;
-}
-
 void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
   return (void *)aligned_alloc(__alignment, vector_len * type_size);
-}
-
-double compute_bandwidth(const unsigned int nr_cpu,     //
-                         const unsigned int nr_streams, //
-                         const size_t batch_vec_size,   //
-                         const double average_time) {
-
-  return ((double)nr_streams * (double)batch_vec_size * (double)nr_cpu *
-          (double)sizeof(float_type)) /
-         (average_time / 1000.0);
 }
 
 /**
@@ -228,10 +162,10 @@ double execute_mt_fma_test(struct streams_args *th_args, int nr_cpu) {
   printf("FMA: %f ms\n", avg_time);
   printf("consume_out: %f\n", consume_out);
 
-  const double bw = compute_bandwidth(nr_cpu, 3, th_args[0].size, avg_time);
+  const double bw = compute_bandwidth(nr_cpu, 3, th_args[0].size, avg_time, sizeof(float_type));
 
-  printf("Bandwidth: %f Mb/s\n", bw / to_Mb );
-  printf("Bandwidth: %f Gb/s\n", bw / to_Gb );
+  printf("Bandwidth: %f Mb/s\n", bw / to_Mb);
+  printf("Bandwidth: %f Gb/s\n", bw / to_Gb);
 
   free(threads);
 
