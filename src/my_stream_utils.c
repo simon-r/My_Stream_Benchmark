@@ -69,6 +69,29 @@ double compute_bandwidth(const unsigned int nr_cpu,      //
                          const unsigned int word_size) { //
 
   return (double)nr_streams * (double)batch_vec_size * (double)nr_cpu *
-          (word_size) /
-         (average_time / 1000.0);
+         (word_size) / (average_time / 1000.0);
 }
+
+double average(const double *v, unsigned int n) {
+
+  double sum = 0;
+
+  for (unsigned int i = 0; i < n; i++) {
+    sum += v[i];
+  }
+
+  return sum / (double)n;
+}
+
+double variance(const double *v, unsigned int n) {
+
+  double avg = average(v, n);
+  double sum = 0;
+
+  for (unsigned int i = 0; i < n; i++) {
+    sum += (v[i] - avg) * (v[i] - avg);
+  }
+  return sum / (double)n;
+}
+
+double std_dev(const double *v, unsigned int n) { return sqrt(variance(v, n)); }

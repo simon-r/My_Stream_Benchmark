@@ -18,6 +18,12 @@ double compute_bandwidth(const unsigned int nr_cpu,     //
                          const unsigned int nr_streams, //
                          const size_t batch_vec_size,   //
                          const double average_time,     //
-                         const unsigned int word_size);
+                         const unsigned int word_size); //
+
+double average(const double *v, unsigned int n);
+
+double variance(const double *v, unsigned int n);
+
+double std_dev(const double *v, unsigned int n);
 
 #endif // __MY_STREAM_UTILS__
