@@ -270,7 +270,7 @@ int main(int argc, char **argv) {
       vec_size = strtoul(vec_size_arg, NULL, 10);
       printf("User defined vector size: %lu\n", vec_size);
     } else {
-      printf("Error: argv[1] is not numeric\n");
+      printf("Error: argument of -s is not numeric\n");
       return 1;
     }
   }

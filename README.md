@@ -2,13 +2,15 @@
 
 -------------------------
 
-**My_Stream**, is a collection of benchmarks designed to test the memory bandwidth (in Mb/s and Gb/s). In order to measure the bandwidth, it executes four "memory bound" vector operations: Axpy, Copy, FMA (fused multiply-add), and Add Mult.
+**My_Stream**, is a collection of benchmarks designed to test memory bandwidth (in Mb/s and Gb/s). To measure the bandwidth, it performs four "memory bound" vector operations: Axpy, Copy, FMA (fused multiply-add), and Add Mult.
+
+***Version: 0.1.0***
 
 ### Key Components
 
-* Libraries Included: OpenMP, pthread, semaphore, stdio, stdlib, time.
-* Data Types: It uses a typedef float_type as double.
-* Vector Operations: Utilizes SIMD (Single Instruction, Multiple Data) capabilities to process vectors efficiently.
+* Libraries included: OpenMP, pthread, semaphore, stdio, stdlib, time.
+* Data types: It uses a typedef float_type as double.
+* Vector operations: Uses SIMD (Single Instruction, Multiple Data) capabilities to efficiently process vectors.
 
 ### Operations
 
@@ -35,7 +37,7 @@ My stream consists of three application which perform the memory bandwidth bench
 
 * **my_stream_OMP** The original stream benchmark approach based on OpenMP.
 
-* **my_stream_mt_gm** It executes a number of threads that is equal to the number of CPU and performs the operation on different portions of pages of memory allocated globally the main thread.
+* **my_stream_mt_gm** It executes a number of threads that is equal to the number of CPU and performs the operation on different portions of pages of memory allocated globally by the main thread.
 
 * **my_stream_mt_lm**  It executes a number of threads that is equal to the number of CPU and performs the operation on pages of memory allocated locally in the threads.
 
@@ -64,9 +66,8 @@ Computes memory consumption and bandwidth for each operation.
 
 ### Output
 
-Provides detailed information on vector sizes, CPU count, corrected
-vector sizes, memory sizes, and repetitions.
-Outputs average execution times, bandwidth, and memory streamed for
+Provides detailed information regarding vector sizes, CPU count, adjusted vector sizes, memory sizes, and repetitions.
+Reports average execution times, bandwidth and memory used for
 Axpy, Copy, and FMA operations.
 
 ### Tested compilers

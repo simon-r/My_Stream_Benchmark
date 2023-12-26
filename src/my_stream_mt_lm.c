@@ -372,7 +372,107 @@ double execute_mt_FMA_test(struct streams_args *th_args, int nr_cpu) {
   return avg_time;
 }
 
-void *add_mult_thread(void *arg_void) { return NULL; }
+void *add_mult_thread(void *arg_void) {
+  struct streams_args *args = (struct streams_args *)arg_void;
+
+  size_t size = args->size;
+
+  float_type *a = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              args->size, sizeof(float_type));
+
+  float_type *b = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              args->size, sizeof(float_type));
+
+  float_type *c = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              args->size, sizeof(float_type));
+
+  float_type *d = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
+                                              args->size, sizeof(float_type));
+
+  unsigned int r = 1;
+  for (int i = 0; i < args->size; i++) {
+    r = generate_random_number(r);
+    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
+    b[i] = 1.0 + (float_type)(r % 400) / 300.0;
+    c[i] = 1.0 + (float_type)(r % 500) / 400.0;
+    d[i] = 0.0;
+  }
+
+  vector_type *a_vec = (vector_type *)(a);
+  vector_type *b_vec = (vector_type *)(b);
+  vector_type *c_vec = (vector_type *)(c);
+  vector_type *d_vec = (vector_type *)(d);
+
+  size_t size_vec = (args->size) / VECTOR_LEN;
+
+  // start hi definition clock
+  struct timespec start, end;
+  double elapsed = 0.0;
+  double consume_out = 0.0;
+
+  for (int i = 0; i < args->benchmark_repetitions; i++) {
+    sem_wait(args->semaphore);
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for (int i = 0; i < size_vec; i++) {
+      d_vec[i] = a_vec[i] + b_vec[i];
+      c_vec[i] = a_vec[i] * b_vec[i];
+    }
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    sem_post(args->semaphore);
+
+    elapsed += get_time(start, end);
+    consume_out += a[rand() % size] + b[rand() % size] + c[rand() % size] +
+                   d[rand() % size];
+  }
+
+  args->consume_out = consume_out;
+  args->clock = elapsed / args->benchmark_repetitions;
+
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+
+  return NULL;
+}
+
+double execute_mt_add_mult_test(struct streams_args *th_args, int nr_cpu) {
+
+  sem_t semaphore;
+  sem_init(&semaphore, 0, nr_cpu);
+
+  double avg_time = 0.0;
+  double consume_out = 0.0;
+
+  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
+
+  for (int i = 0; i < nr_cpu; i++) {
+    th_args[i].semaphore = &semaphore;
+    pthread_create(&threads[i], NULL, add_mult_thread, &th_args[i]);
+  }
+
+  for (int i = 0; i < nr_cpu; i++) {
+    pthread_join(threads[i], NULL);
+    avg_time += th_args[i].clock;
+    consume_out += th_args[i].consume_out;
+  }
+  avg_time /= nr_cpu;
+
+  printf("ADD MUL: %f ms\n", avg_time);
+  printf("consume_out: %f\n", consume_out);
+
+  const double bw = compute_bandwidth(nr_cpu, 4, th_args[0].size, avg_time,
+                                      sizeof(float_type));
+
+  printf("ADD MUL Bandwidth: %f Mb/s\n", bw / to_Mb);
+  printf("ADD MUL Bandwidth: %f Gb/s\n", bw / to_Gb);
+
+  free(threads);
+
+  return avg_time;
+}
 
 /**
  * @brief
@@ -383,7 +483,8 @@ void *add_mult_thread(void *arg_void) { return NULL; }
  */
 int main(int argc, char **argv) {
 
-  printf("Start My Stream [Multi Threads - Local Memory]\n------------------------\n\n");
+  printf("Start My Stream [Multi Threads - Local "
+         "Memory]\n------------------------\n\n");
 
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
@@ -419,7 +520,7 @@ int main(int argc, char **argv) {
       vec_size = strtoul(vec_size_arg, NULL, 10);
       printf("User defined vector size: %lu\n", vec_size);
     } else {
-      printf("Error: argv[1] is not numeric\n");
+      printf("Error: argument of -s is not numeric\n");
       return 1;
     }
   }
@@ -496,6 +597,18 @@ int main(int argc, char **argv) {
     printf("FMA Average time: %f ms\n", avg_time);
   }
 
+  {
+    printf("\n");
+    for (int i = 0; i < nr_cpu; i++) {
+      th_args[i].size = batch_vec_size;
+      th_args[i].benchmark_repetitions = benchmark_repetitions;
+      th_args[i].consume_out = 0.0;
+      th_args[i].clock = 0.0;
+    }
+
+    double avg_time = execute_mt_add_mult_test(th_args, nr_cpu);
+    printf("ADD MUL Average time: %f ms\n", avg_time);
+  }
 
   printf("\n");
   return 0;
