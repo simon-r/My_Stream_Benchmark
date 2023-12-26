@@ -234,7 +234,7 @@ void addmul_omp(struct streams_args *args) {
  */
 int main(int argc, char **argv) {
 
-  printf("Start My Stream\n------------------------\n\n");
+  printf("Start My Stream  [OpenMP]\n------------------------\n\n");
 
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
@@ -355,11 +355,17 @@ int main(int argc, char **argv) {
   args.consume_out = 22.2;
   args.benchmark_repetitions = benchmark_repetitions;
   addmul_omp(&args);
-  
+
   printf("-----------------------------------------------------------\n");
   printf("Add Mul:                   %f [Gb/s]\n", args.bandwidth / to_Gb);
   printf("Clock:                     %f [ms]\n", args.clock);
   printf("Consume:  %lf\n", args.consume_out);
   printf("-----------------------------------------------------------\n");
+
+  free(args.a);
+  free(args.b);
+  free(args.c);
+  free(args.d);
+
   return 0;
 }

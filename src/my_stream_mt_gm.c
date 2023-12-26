@@ -350,7 +350,7 @@ void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
  */
 int main(int argc, char **argv) {
 
-  printf("Start My Stream\n------------------------\n\n");
+  printf("Start My Stream [Multi Threads - Global Memory]\n------------------------\n\n");
 
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
@@ -570,20 +570,22 @@ int main(int argc, char **argv) {
   printf("Bandwidth add mult: %lf Gb/s\n", bandwidth_add_mult_GbS);
 #endif // VERBOSE
 
-  printf("-----------------------------------------------------------\n\n");
+#define SEP                                                                    \
+  "--------------------------------------------------------------------------" \
+  "---------------------"                                                      \
+  "\n\n"
+
+  printf(SEP);
 
   printf("consume %f (just an output)\n", consume);
 
-  printf("---------------------------------------------------------------------"
-         "\n\n");
+  printf(SEP);
 
   printf("Results:\n");
-  printf("---------------------------------------------------------------------"
-         "\n\n");
+  printf(SEP);
   printf("Benchmark:             Mb/s                     Gb/s          Memory "
          "Streamed [Mb]\n");
-  printf("---------------------------------------------------------------------"
-         "\n");
+  printf(SEP);
   printf("Axpy:           %15.2lf       %15.2lf         %lf\n", //
          bandwidth_axpy_MbS,                                    //
          bandwidth_axpy_GbS, memory_streamed_axpy_Mb);          //
@@ -600,8 +602,7 @@ int main(int argc, char **argv) {
          bandwidth_add_mult_MbS,                                //
          bandwidth_add_mult_GbS, memory_streamed_add_mult_Mb);  //
 
-  printf("---------------------------------------------------------------------"
-         "\n\n");
+  printf(SEP);
 
   free(a);
   free(b);

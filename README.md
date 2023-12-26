@@ -2,7 +2,7 @@
 
 -------------------------
 
-This program, "my_stream.c", is designed to benchmark the memory bandwidth (in Mb/s and Gb/s). In order to measure the bandwidth, it executes three "memory bound" vector operations: Axpy, Copy, FMA (fused multiply-add), and Add Mult.
+**My_Stream**, is a collection of benchmarks designed to test the memory bandwidth (in Mb/s and Gb/s). In order to measure the bandwidth, it executes four "memory bound" vector operations: Axpy, Copy, FMA (fused multiply-add), and Add Mult.
 
 ### Key Components
 
@@ -14,7 +14,7 @@ This program, "my_stream.c", is designed to benchmark the memory bandwidth (in M
 
   1. Axpy (Vector operation):
         Multiplies each element of one vector by a scalar and adds it to another vector.
-        d[i] = aa * a[i] + b[i];
+        d[i] = alpha * a[i] + b[i];
 
   2. Copy:
         Copies elements from one vector to another.
@@ -29,9 +29,24 @@ This program, "my_stream.c", is designed to benchmark the memory bandwidth (in M
         d[i] = a[i] + b[i];
         c[i] = a[i] * b[i];
 
+### Applications
+
+My stream consists of three application which perform the memory bandwidth benchmark in three different conditions:
+
+* **my_stream_OMP** The original stream benchmark approach based on OpenMP.
+
+* **my_stream_mt_gm** It executes a number of threads that is equal to the number of CPU and performs the operation on different portions of pages of memory allocated globally the main thread.
+
+* **my_stream_mt_lm**  It executes a number of threads that is equal to the number of CPU and performs the operation on pages of memory allocated locally in the threads.
+
+* **my_stream_MPI** TODO
+
 ### Usage
 
-      my_stream.exe -s {vec_size}
+      my_stream_OMP.exe -s {vec_size}
+      my_stream_mt_gm.exe -s {vec_size}
+      my_stream_mt_lm.exe -s {vec_size}
+      
 
 ### Benchmarking
 
