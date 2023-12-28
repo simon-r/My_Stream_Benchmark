@@ -51,10 +51,27 @@ typedef double float_type;
 
 struct streams_args {
   size_t size;
+  size_t vec_size_proc;
 
   double clock_FMA;
   double bandwidth_FMA;
   double consume_out_FMA;
+  double total_streamed_memory_FMA;
+
+  double clock_copy;
+  double bandwidth_copy;
+  double consume_out_copy;
+  double total_streamed_memory_copy;
+
+  double clock_axpy;
+  double bandwidth_axpy;
+  double consume_out_axpy;
+  double total_streamed_memory_axpy;
+
+  double clock_add_mul;
+  double bandwidth_add_mul;
+  double consume_out_add_mul;
+  double total_streamed_memory_add_mul;
 
   size_t benchmark_repetitions;
 };
@@ -67,15 +84,24 @@ typedef float_type vector_type
     __attribute__((vector_size(VECTOR_LEN * sizeof(float_type)), //
                    aligned(sizeof(float_type))));                //
 
+/**
+ * @brief
+ *
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ * @param args
+ */
 void FMA_test(float_type *a, float_type *b, float_type *c, float_type *d,
-              struct streams_args *args, int nr_proc) {
+              struct streams_args *args) {
 
   vector_type *a_vec = (vector_type *)(a);
   vector_type *b_vec = (vector_type *)(b);
   vector_type *c_vec = (vector_type *)(c);
   vector_type *d_vec = (vector_type *)(d);
 
-  size_t size_vec = args->size / VECTOR_LEN;
+  size_t size_vec = args->vec_size_proc / VECTOR_LEN;
 
   float_type consume = 0;
 
@@ -83,22 +109,170 @@ void FMA_test(float_type *a, float_type *b, float_type *c, float_type *d,
 
   for (int r = 0; r < args->benchmark_repetitions; r++) {
     MPI_Barrier(MPI_COMM_WORLD);
+
     clock_gettime(CLOCK_MONOTONIC, &start);
     for (int i = 0; i < size_vec; i++) {
       d_vec[i] = a_vec[i] * b_vec[i] + c_vec[i];
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
+
     MPI_Barrier(MPI_COMM_WORLD);
 
     args->clock_FMA += get_time(start, end);
-    consume += d[rand() % args->size] + a[rand() % args->size] +
-               b[rand() % args->size] + c[rand() % args->size];
+    consume +=
+        d[rand() % args->vec_size_proc] + a[rand() % args->vec_size_proc] +
+        b[rand() % args->vec_size_proc] + c[rand() % args->vec_size_proc];
   }
 
   args->clock_FMA /= args->benchmark_repetitions;
-  args->bandwidth_FMA =
-      compute_bandwidth(1, 4, args->size, args->clock_FMA, sizeof(float_type));
+  args->bandwidth_FMA = compute_bandwidth(1, 4, args->vec_size_proc,
+                                          args->clock_FMA, sizeof(float_type));
   args->consume_out_FMA = consume;
+  args->total_streamed_memory_FMA =
+      args->vec_size_proc * 4 * sizeof(float_type);
+}
+
+/**
+ * @brief
+ *
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ * @param args
+ */
+void copy_test(float_type *a, float_type *b, float_type *c, float_type *d,
+               struct streams_args *args) {
+
+  vector_type *a_vec = (vector_type *)(a);
+  vector_type *d_vec = (vector_type *)(d);
+
+  size_t size_vec = args->vec_size_proc / VECTOR_LEN;
+
+  float_type consume = 0;
+  struct timespec start, end;
+
+  for (int r = 0; r < args->benchmark_repetitions; r++) {
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for (int i = 0; i < size_vec; i++) {
+      d_vec[i] = a_vec[i];
+    }
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    args->clock_copy += get_time(start, end);
+    consume +=
+        d[rand() % args->vec_size_proc] + a[rand() % args->vec_size_proc];
+  }
+
+  args->clock_copy /= args->benchmark_repetitions;
+  args->bandwidth_copy = compute_bandwidth(
+      1, 2, args->vec_size_proc, args->clock_copy, sizeof(float_type));
+
+  args->consume_out_copy = consume;
+  args->total_streamed_memory_copy =
+      args->vec_size_proc * 2 * sizeof(float_type);
+}
+
+/**
+ * @brief
+ *
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ * @param args
+ */
+void axpy_test(float_type *a, float_type *b, float_type *c, float_type *d,
+               struct streams_args *args) {
+
+  vector_type *a_vec = (vector_type *)(a);
+  vector_type *b_vec = (vector_type *)(b);
+
+  vector_type *d_vec = (vector_type *)(d);
+
+  size_t size_vec = args->vec_size_proc / VECTOR_LEN;
+
+  float_type consume = 0;
+  float_type alpha = 2.56;
+
+  struct timespec start, end;
+
+  for (int r = 0; r < args->benchmark_repetitions; r++) {
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for (int i = 0; i < size_vec; i++) {
+      d_vec[i] = alpha * a_vec[i] + b_vec[i];
+    }
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    args->clock_axpy += get_time(start, end);
+    consume += d[rand() % args->vec_size_proc] +
+               a[rand() % args->vec_size_proc] +
+               c[rand() % args->vec_size_proc];
+  }
+
+  args->clock_axpy /= args->benchmark_repetitions;
+  args->bandwidth_axpy = compute_bandwidth(
+      1, 3, args->vec_size_proc, args->clock_axpy, sizeof(float_type));
+  args->consume_out_axpy = consume;
+  args->total_streamed_memory_axpy =
+      args->vec_size_proc * 4 * sizeof(float_type);
+}
+
+/**
+ * @brief
+ *
+ * @param a
+ * @param b
+ * @param c
+ * @param d
+ * @param args
+ */
+void add_mul_test(float_type *a, float_type *b, float_type *c, float_type *d,
+                  struct streams_args *args) {
+
+  vector_type *a_vec = (vector_type *)(a);
+  vector_type *b_vec = (vector_type *)(b);
+  vector_type *c_vec = (vector_type *)(c);
+  vector_type *d_vec = (vector_type *)(d);
+
+  size_t size_vec = args->vec_size_proc / VECTOR_LEN;
+
+  float_type consume = 0;
+
+  struct timespec start, end;
+
+  for (int r = 0; r < args->benchmark_repetitions; r++) {
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    clock_gettime(CLOCK_MONOTONIC, &start);
+    for (int i = 0; i < size_vec; i++) {
+      d_vec[i] = a_vec[i] + b_vec[i];
+      c_vec[i] = a_vec[i] * b_vec[i];
+    }
+    clock_gettime(CLOCK_MONOTONIC, &end);
+
+    MPI_Barrier(MPI_COMM_WORLD);
+
+    args->clock_add_mul += get_time(start, end);
+    consume +=
+        d[rand() % args->vec_size_proc] + a[rand() % args->vec_size_proc] +
+        b[rand() % args->vec_size_proc] + c[rand() % args->vec_size_proc];
+  }
+
+  args->clock_add_mul /= args->benchmark_repetitions;
+  args->bandwidth_add_mul = compute_bandwidth(
+      1, 4, args->vec_size_proc, args->clock_add_mul, sizeof(float_type));
+  args->consume_out_add_mul = consume;
+  args->total_streamed_memory_add_mul =
+      args->vec_size_proc * 4 * sizeof(float_type);
 }
 
 int main(int argc, char **argv) {
@@ -113,6 +287,7 @@ int main(int argc, char **argv) {
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
   if (rank == 0) {
+    printf("------------------------\n");
     printf("Start My Stream [MPI]\n------------------------\n\n");
   }
 
@@ -188,46 +363,74 @@ int main(int argc, char **argv) {
   // const int nr_cpu = omp_get_num_procs();
   vec_size = vec_size / world_size;
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * world_size;
+  size_t vec_size_proc = vec_size / world_size;
 
   double to_Mb = (1024.0 * 1024.0);
   double to_Gb = (1024.0 * 1024.0 * 1024.0);
 
-  double bytes_vec_size = (double)(vec_size * sizeof(float_type));
+  double bytes_vec_size = (double)(vec_size_proc * sizeof(float_type));
   double Mb_vec_size = bytes_vec_size / to_Mb;
   double Gb_vec_size = bytes_vec_size / to_Gb;
 
   if (rank == 0) {
     printf("\n-----------------------------------------------------------\n");
-    printf("Number of CPU:             %d\n", world_size);
-    printf("Adjusted vector size:      %lu\n", vec_size);
-    printf("Mb Vector size:            %f\n", Mb_vec_size);
-    printf("Gb Vector size:            %f\n", Gb_vec_size);
-    printf("Gb Total allocated memory: %f\n", Gb_vec_size * 4);
-    printf("Repetitions:               %d\n", benchmark_repetitions);
+    printf("Number of MPI process:                 %d\n", world_size);
+    printf("Adjusted vector size:                  %lu\n", vec_size);
+    printf("Mb Vector size per process:            %f\n", Mb_vec_size);
+    printf("Gb Vector size per process:            %f\n", Gb_vec_size);
+    printf("Gb Total allocated memory:             %f\n",
+           (Gb_vec_size * 4 * world_size));
+    printf("Repetitions:                           %d\n",
+           benchmark_repetitions);
     printf("-----------------------------------------------------------\n\n");
   }
 
   struct streams_args *args =
       (struct streams_args *)malloc(world_size * sizeof(struct streams_args));
 
+  // printf("Process %d: vec_size_proc = %lu\n", rank, vec_size_proc);
+  // printf("Process %d: vec_size = %lu\n", rank, vec_size);
+
   args[rank].size = vec_size;
+  args[rank].vec_size_proc = vec_size_proc;
+
   args[rank].benchmark_repetitions = benchmark_repetitions;
+
   args[rank].clock_FMA = 0;
   args[rank].bandwidth_FMA = 0;
   args[rank].consume_out_FMA = 0;
+  args[rank].total_streamed_memory_FMA = 0;
+
+  args[rank].clock_copy = 0;
+  args[rank].bandwidth_copy = 0;
+  args[rank].consume_out_copy = 0;
+  args[rank].total_streamed_memory_copy = 0;
+
+  args[rank].clock_axpy = 0;
+  args[rank].bandwidth_axpy = 0;
+  args[rank].consume_out_axpy = 0;
+  args[rank].total_streamed_memory_axpy = 0;
+
+  args[rank].clock_add_mul = 0;
+  args[rank].bandwidth_add_mul = 0;
+  args[rank].consume_out_add_mul = 0;
+  args[rank].total_streamed_memory_add_mul = 0;
 
   // malloc a aligned to 4 * sizeof(float_type)
-  float_type *a = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size, sizeof(float_type));
-  float_type *b = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size, sizeof(float_type));
-  float_type *c = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(VECTOR_LEN * sizeof(float_type),
-                                              vec_size, sizeof(float_type));
+  float_type *a = (float_type *)stream_calloc(
+      VECTOR_LEN * sizeof(float_type), vec_size_proc, sizeof(float_type));
+
+  float_type *b = (float_type *)stream_calloc(
+      VECTOR_LEN * sizeof(float_type), vec_size_proc, sizeof(float_type));
+
+  float_type *c = (float_type *)stream_calloc(
+      VECTOR_LEN * sizeof(float_type), vec_size_proc, sizeof(float_type));
+
+  float_type *d = (float_type *)stream_calloc(
+      VECTOR_LEN * sizeof(float_type), vec_size_proc, sizeof(float_type));
 
   unsigned int r = 1;
-  for (int i = 0; i < vec_size; i++) {
+  for (int i = 0; i < vec_size_proc; i++) {
     r = generate_random_number(r);
     a[i] = 1.0 + (float_type)(r % 300) / 200.0;
     b[i] = 1.0 + (float_type)(r % 400) / 300.0;
@@ -236,7 +439,16 @@ int main(int argc, char **argv) {
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
-  FMA_test(a, b, c, d, &args[rank], world_size);
+  FMA_test(a, b, c, d, &args[rank]);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  copy_test(a, b, c, d, &args[rank]);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  axpy_test(a, b, c, d, &args[rank]);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+  add_mul_test(a, b, c, d, &args[rank]);
 
   if (rank == 0) {
     for (int i = 1; i < world_size; i++) {
@@ -248,25 +460,53 @@ int main(int argc, char **argv) {
              MPI_COMM_WORLD);
   }
 
-  double FMA_total_bandwidth = 0;
+  double FMA_total_bandwidth = 0.0;
+  double copy_total_bandwidth = 0.0;
+  double axpy_total_bandwidth = 0.0;
+  double add_mul_total_bandwidth = 0.0;
+
+  double clock_FMA = 0.0;
+  double clock_copy = 0.0;
+  double clock_axpy = 0.0;
+  double clock_add_mul = 0.0;
+
   if (rank == 0) {
 
     for (int i = 0; i < world_size; i++) {
-      printf("FMA - Rank:            %d\n", i);
-      printf("FMA - Size:            %lu\n", args[i].size);
-      printf("FMA - Clock:           %f\n", args[i].clock_FMA);
-      printf("FMA - Bandwidth:       %f\n", args[i].bandwidth_FMA / to_Gb);
-      printf("FMA - Consume out:     %f\n", args[i].consume_out_FMA);
-      printf("FMA - Repetitions:     %ld\n", args[i].benchmark_repetitions);
-      printf("\n");
       FMA_total_bandwidth += (args[i].bandwidth_FMA / to_Gb);
-      printf("-----------------------------------------------------------\n");
-      printf("\n");
-    }
-  }
+      clock_FMA += args[i].clock_FMA;
 
-  if (rank == 0)
-    printf("FMA - Total bandwidth: %f GB/s\n", FMA_total_bandwidth);
+      copy_total_bandwidth += (args[i].bandwidth_copy / to_Gb);
+      clock_copy += args[i].clock_copy;
+
+      axpy_total_bandwidth += (args[i].bandwidth_axpy / to_Gb);
+      clock_axpy += args[i].clock_axpy;
+
+      add_mul_total_bandwidth += (args[i].bandwidth_add_mul / to_Gb);
+      clock_add_mul += args[i].clock_add_mul;
+    }
+
+    clock_FMA /= world_size;
+    clock_copy /= world_size;
+    clock_axpy /= world_size;
+    clock_add_mul /= world_size;
+
+    printf("Results:\n\n");
+    printf("-----------------------------------------------------------\n");
+    printf("Test      Total bandwidth          clock  \n");
+    printf("-----------------------------------------------------------\n");
+    printf("FMA:      %.3f GB/s,             %f ms\n", FMA_total_bandwidth,
+           clock_FMA);
+    printf("copy:     %.3f GB/s,             %f ms\n", copy_total_bandwidth,
+           clock_copy);
+    printf("axpy:     %.3f GB/s,             %f ms\n", axpy_total_bandwidth,
+           clock_axpy);
+    printf("add mul:  %.3f GB/s,             %f ms\n", add_mul_total_bandwidth,
+           clock_add_mul);
+
+    printf("\n");
+    printf("-----------------------------------------------------------\n");
+  }
 
   free(a);
   free(b);
