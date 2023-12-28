@@ -1,4 +1,5 @@
 
+#include <math.h>
 #include <omp.h>
 #include <pthread.h>
 #include <semaphore.h>
@@ -7,10 +8,11 @@
 #include <string.h>
 #include <time.h>
 
-char *find_command_line_arg_value(int argc, char *argv[], const char *arg) {
+const char *find_command_line_arg_value(const int argc, const char *argv[],
+                                        const char *arg) {
+
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], arg) == 0) {
-      // Check if the next argument exists and is not another command
       if (i + 1 < argc && argv[i + 1][0] != '-') {
         return argv[i + 1]; // Return pointer to the value
       } else {
@@ -19,6 +21,21 @@ char *find_command_line_arg_value(int argc, char *argv[], const char *arg) {
     }
   }
   return NULL; // Argument not found
+}
+
+const int find_command_line_arg_value_v2(const int argc, const char *argv[],
+                                         const char *arg) {
+
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], arg) == 0) {
+      if (i + 1 < argc && argv[i + 1][0] != '-') {
+        return i + 1; // Return pointer to the value
+      } else {
+        return -1; // No value or next argument is a command
+      }
+    }
+  }
+  return -1; // Argument not found
 }
 
 int flag_exists(int argc, char *argv[], const char *flag) {

@@ -6,6 +6,9 @@ const double to_Gb = (1024.0 * 1024.0 * 1024.0);
 
 char *find_command_line_arg_value(int argc, char *argv[], const char *arg);
 
+const int find_command_line_arg_value_v2(const int argc, const char *argv[],
+                                         const char *arg);
+
 int flag_exists(int argc, char *argv[], const char *flag);
 
 int is_number(char *str);

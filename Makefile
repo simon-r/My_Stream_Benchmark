@@ -1,11 +1,16 @@
 
 CC_FLAGS = -Ofast -fopenmp  -march=native -Wall
-LINK_FLAGS = -lpthread
+LINK_FLAGS = -lpthread -lm
+
 TARGET=my_stream_mt_gm.exe
 TARGET_mt_lm=my_stream_mt_lm.exe
 TARGET_OMP=my_stream_OMP.exe
+TARGET_MPI=my_stream_MPI.exe
 
-all: mt mt_lm omp
+OMPI_CC=${CC}
+MPICC=mpicc 
+
+all: mt mt_lm omp mpi
 
 ############################################################
 mt: src/my_stream_mt_gm.c
@@ -26,12 +31,22 @@ omp: src/my_stream_utils.o src/my_stream_OMP.o
 	${CC}  src/my_stream_utils.o src/my_stream_OMP.o -o ${TARGET_OMP} ${CC_FLAGS} ${LINK_FLAGS} 
 
 src/my_stream_OMP.o: src/my_stream_OMP.c
-	${CC} -c ${CC_FLAGS}  src/my_stream_OMP.c -o src/my_stream_OMP.o
+	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS}
 
 src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
 	${CC}  -c  src/my_stream_utils.c -o src/my_stream_utils.o  ${CC_FLAGS}
 
 
+############################################################
+mpi: src/my_stream_utils.o src/my_stream_MPI.o
+	${MPICC} src/my_stream_utils.o src/my_stream_MPI.o -o ${TARGET_MPI} ${CC_FLAGS} ${LINK_FLAGS}
+
+src/my_stream_MPI.o: src/my_stream_MPI.c
+	${MPICC} -c src/my_stream_MPI.c -o src/my_stream_MPI.o ${CC_FLAGS}
+
+src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
+	${MPICC}  -c src/my_stream_utils.c -o src/my_stream_utils.o  ${CC_FLAGS}
+
 
 clean:
-	rm ${TARGET} ${TARGET_mt_lm} ${TARGET_OMP} ${PWD}/src/*.o
+	rm ${TARGET} ${TARGET_mt_lm} ${TARGET_OMP} ${TARGET_MPI} ${PWD}/src/*.o
