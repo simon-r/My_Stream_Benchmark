@@ -49,6 +49,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 typedef double float_type;
 
+struct stream_results {
+  double clock;
+  double bandwidth;
+  double consume_out;
+  double total_streamed_memory;
+};
+
 struct streams_args {
   size_t size;
   size_t vec_size_proc;
