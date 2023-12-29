@@ -11,6 +11,7 @@
 * Libraries included: OpenMP, pthread, semaphore, stdio, stdlib, time.
 * Data types: It uses a typedef float_type as double.
 * Vector operations: Uses SIMD (Single Instruction, Multiple Data) capabilities to efficiently process vectors.
+* MPI (OpenMPI or MPICH)
 
 ### Operations
 
@@ -41,14 +42,25 @@ My stream consists of three application which perform the memory bandwidth bench
 
 * **my_stream_mt_lm**  It executes a number of threads that is equal to the number of CPU and performs the operation on pages of memory allocated locally in the threads.
 
-* **my_stream_MPI** TODO
+* **my_stream_MPI** Test based on MPI.
 
 ### Usage
 
-      my_stream_OMP.exe -s {vec_size}
-      my_stream_mt_gm.exe -s {vec_size}
-      my_stream_mt_lm.exe -s {vec_size}
-      
+##### Clone and compile:
+
+      git clone https://github.com/simon-r/My_Stream_Benchmark.git
+      cd My_Stream_Benchmark
+      make
+
+##### Execute:
+
+      ./my_stream_OMP.exe -s {vec_size}
+      ./my_stream_mt_gm.exe -s {vec_size}
+      ./my_stream_mt_lm.exe -s {vec_size}
+      mpirun ./my_stream_MPI.exe -s {vec_size}
+
+For a reliable measurement, make sure that the total allocated memory is approximately half of the total available DRAM.
+
 
 ### Benchmarking
 

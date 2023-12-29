@@ -64,8 +64,65 @@ struct streams_args {
   sem_t *semaphore;
 };
 
+struct benchmark_results {
+  double total_bandwidth;
+  double mean_clock;
+  double consume;
+};
+
+/**
+ * @brief
+ *
+ * @param __alignment
+ * @param vector_len
+ * @param type_size
+ * @return void*
+ */
 void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
   return (void *)aligned_alloc(__alignment, vector_len * type_size);
+}
+
+/**
+ * @brief
+ *
+ * @param th_args
+ * @param benchmark_fun
+ * @param nr_cpu
+ * @param nr_streams
+ * @return double
+ */
+struct benchmark_results execute_mt_benchmark(struct streams_args *th_args, //
+                                              void *benchmark_fun(void *),  //
+                                              int nr_cpu, int nr_streams) { //
+
+  sem_t semaphore;
+  sem_init(&semaphore, 0, nr_cpu);
+
+  double avg_time = 0.0;
+  double consume_out = 0.0;
+
+  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
+
+  for (int i = 0; i < nr_cpu; i++) {
+    th_args[i].semaphore = &semaphore;
+    pthread_create(&threads[i], NULL, benchmark_fun, &th_args[i]);
+  }
+
+  for (int i = 0; i < nr_cpu; i++) {
+    pthread_join(threads[i], NULL);
+    avg_time += th_args[i].clock;
+    consume_out += th_args[i].consume_out;
+  }
+  avg_time /= nr_cpu;
+
+  const double bw = compute_bandwidth(nr_cpu, nr_streams, th_args[0].size,
+                                      avg_time, sizeof(float_type));
+
+  struct benchmark_results results = {bw, avg_time, consume_out};
+
+  free(threads);
+
+  return results;
 }
 
 /**
@@ -135,42 +192,6 @@ void *axpy_thread(void *arg_void) {
   return NULL;
 }
 
-double execute_mt_axpy_test(struct streams_args *th_args, int nr_cpu) {
-
-  sem_t semaphore;
-  sem_init(&semaphore, 0, nr_cpu);
-
-  double avg_time = 0.0;
-  double consume_out = 0.0;
-
-  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
-
-  for (int i = 0; i < nr_cpu; i++) {
-    th_args[i].semaphore = &semaphore;
-    pthread_create(&threads[i], NULL, axpy_thread, &th_args[i]);
-  }
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_join(threads[i], NULL);
-    avg_time += th_args[i].clock;
-    consume_out += th_args[i].consume_out;
-  }
-  avg_time /= nr_cpu;
-
-  printf("AXPY: %f ms\n", avg_time);
-  printf("consume_out: %f\n", consume_out);
-
-  const double bw = compute_bandwidth(nr_cpu, 3, th_args[0].size, avg_time,
-                                      sizeof(float_type));
-
-  printf("AXPY Bandwidth: %f Mb/s\n", bw / to_Mb);
-  printf("AXPY Bandwidth: %f Gb/s\n", bw / to_Gb);
-
-  free(threads);
-
-  return avg_time;
-}
-
 /**
  * @brief
  *
@@ -228,42 +249,6 @@ void *copy_thread(void *arg_void) {
   free(d);
 
   return NULL;
-}
-
-double execute_mt_copy_test(struct streams_args *th_args, int nr_cpu) {
-
-  sem_t semaphore;
-  sem_init(&semaphore, 0, nr_cpu);
-
-  double avg_time = 0.0;
-  double consume_out = 0.0;
-
-  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
-
-  for (int i = 0; i < nr_cpu; i++) {
-    th_args[i].semaphore = &semaphore;
-    pthread_create(&threads[i], NULL, copy_thread, &th_args[i]);
-  }
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_join(threads[i], NULL);
-    avg_time += th_args[i].clock;
-    consume_out += th_args[i].consume_out;
-  }
-  avg_time /= nr_cpu;
-
-  printf("COPY: %f ms\n", avg_time);
-  printf("consume_out: %f\n", consume_out);
-
-  const double bw = compute_bandwidth(nr_cpu, 2, th_args[0].size, avg_time,
-                                      sizeof(float_type));
-
-  printf("Copy Bandwidth: %f Mb/s\n", bw / to_Mb);
-  printf("Copy Bandwidth: %f Gb/s\n", bw / to_Gb);
-
-  free(threads);
-
-  return avg_time;
 }
 
 /**
@@ -336,42 +321,12 @@ void *FMA_thread(void *arg_void) {
   return NULL;
 }
 
-double execute_mt_FMA_test(struct streams_args *th_args, int nr_cpu) {
-
-  sem_t semaphore;
-  sem_init(&semaphore, 0, nr_cpu);
-
-  double avg_time = 0.0;
-  double consume_out = 0.0;
-
-  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
-
-  for (int i = 0; i < nr_cpu; i++) {
-    th_args[i].semaphore = &semaphore;
-    pthread_create(&threads[i], NULL, FMA_thread, &th_args[i]);
-  }
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_join(threads[i], NULL);
-    avg_time += th_args[i].clock;
-    consume_out += th_args[i].consume_out;
-  }
-  avg_time /= nr_cpu;
-
-  printf("FMA: %f ms\n", avg_time);
-  printf("consume_out: %f\n", consume_out);
-
-  const double bw = compute_bandwidth(nr_cpu, 4, th_args[0].size, avg_time,
-                                      sizeof(float_type));
-
-  printf("FMA Bandwidth: %f Mb/s\n", bw / to_Mb);
-  printf("FMA Bandwidth: %f Gb/s\n", bw / to_Gb);
-
-  free(threads);
-
-  return avg_time;
-}
-
+/**
+ * @brief
+ *
+ * @param arg_void
+ * @return void*
+ */
 void *add_mult_thread(void *arg_void) {
   struct streams_args *args = (struct streams_args *)arg_void;
 
@@ -436,42 +391,6 @@ void *add_mult_thread(void *arg_void) {
   free(d);
 
   return NULL;
-}
-
-double execute_mt_add_mult_test(struct streams_args *th_args, int nr_cpu) {
-
-  sem_t semaphore;
-  sem_init(&semaphore, 0, nr_cpu);
-
-  double avg_time = 0.0;
-  double consume_out = 0.0;
-
-  pthread_t *threads = malloc(nr_cpu * sizeof(pthread_t));
-
-  for (int i = 0; i < nr_cpu; i++) {
-    th_args[i].semaphore = &semaphore;
-    pthread_create(&threads[i], NULL, add_mult_thread, &th_args[i]);
-  }
-
-  for (int i = 0; i < nr_cpu; i++) {
-    pthread_join(threads[i], NULL);
-    avg_time += th_args[i].clock;
-    consume_out += th_args[i].consume_out;
-  }
-  avg_time /= nr_cpu;
-
-  printf("ADD MUL: %f ms\n", avg_time);
-  printf("consume_out: %f\n", consume_out);
-
-  const double bw = compute_bandwidth(nr_cpu, 4, th_args[0].size, avg_time,
-                                      sizeof(float_type));
-
-  printf("ADD MUL Bandwidth: %f Mb/s\n", bw / to_Mb);
-  printf("ADD MUL Bandwidth: %f Gb/s\n", bw / to_Gb);
-
-  free(threads);
-
-  return avg_time;
 }
 
 /**
@@ -559,6 +478,12 @@ int main(int argc, char **argv) {
   struct streams_args *th_args = malloc(nr_cpu * sizeof(struct streams_args));
   size_t batch_vec_size = vec_size / nr_cpu;
 
+  printf("-----------------------------------------------------------\n");
+  printf("Results:\n");
+  printf("-----------------------------------------------------------\n\n");
+  printf("Test       bandwidth     mean time\n");
+  printf("-----------------------------------------------------------\n");
+
   {
     for (int i = 0; i < nr_cpu; i++) {
       th_args[i].size = batch_vec_size;
@@ -567,12 +492,13 @@ int main(int argc, char **argv) {
       th_args[i].clock = 0.0;
     }
 
-    double avg_time = execute_mt_axpy_test(th_args, nr_cpu);
-    printf("AXPY Average time: %f ms\n", avg_time);
+    struct benchmark_results results =
+        execute_mt_benchmark(th_args, axpy_thread, nr_cpu, 3);
+    printf("AXPY:      %.3f GB/s   %f ms\n", results.total_bandwidth / to_Gb,
+           results.mean_clock);
   }
 
   {
-    printf("\n");
     for (int i = 0; i < nr_cpu; i++) {
       th_args[i].size = batch_vec_size;
       th_args[i].benchmark_repetitions = benchmark_repetitions;
@@ -580,12 +506,13 @@ int main(int argc, char **argv) {
       th_args[i].clock = 0.0;
     }
 
-    double avg_time = execute_mt_copy_test(th_args, nr_cpu);
-    printf("Copy Average time: %f ms\n", avg_time);
+    struct benchmark_results results =
+        execute_mt_benchmark(th_args, copy_thread, nr_cpu, 2);
+    printf("Copy:      %.3f GB/s   %f ms\n", results.total_bandwidth / to_Gb,
+           results.mean_clock);
   }
 
   {
-    printf("\n");
     for (int i = 0; i < nr_cpu; i++) {
       th_args[i].size = batch_vec_size;
       th_args[i].benchmark_repetitions = benchmark_repetitions;
@@ -593,12 +520,13 @@ int main(int argc, char **argv) {
       th_args[i].clock = 0.0;
     }
 
-    double avg_time = execute_mt_FMA_test(th_args, nr_cpu);
-    printf("FMA Average time: %f ms\n", avg_time);
+    struct benchmark_results results =
+        execute_mt_benchmark(th_args, FMA_thread, nr_cpu, 4);
+    printf("FMA:       %.3f GB/s   %f ms\n", results.total_bandwidth / to_Gb,
+           results.mean_clock);
   }
 
   {
-    printf("\n");
     for (int i = 0; i < nr_cpu; i++) {
       th_args[i].size = batch_vec_size;
       th_args[i].benchmark_repetitions = benchmark_repetitions;
@@ -606,9 +534,12 @@ int main(int argc, char **argv) {
       th_args[i].clock = 0.0;
     }
 
-    double avg_time = execute_mt_add_mult_test(th_args, nr_cpu);
-    printf("ADD MUL Average time: %f ms\n", avg_time);
+    struct benchmark_results results =
+        execute_mt_benchmark(th_args, add_mult_thread, nr_cpu, 4);
+    printf("Add Mul:   %.3f GB/s   %f ms\n", results.total_bandwidth / to_Gb,
+           results.mean_clock);
   }
+  printf("-----------------------------------------------------------\n");
 
   printf("\n");
   return 0;
