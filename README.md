@@ -2,7 +2,7 @@
 
 -------------------------
 
-**My_Stream**, is a collection of benchmarks designed to test memory bandwidth (in Mb/s and Gb/s). To measure the bandwidth, it performs four "memory bound" vector operations: Axpy, Copy, FMA (fused multiply-add), and Add Mult.
+**My_Stream**, is a collection of benchmarks designed to test memory bandwidth (in Mb/s and Gb/s). To measure the bandwidth, it performs four "memory bound" vector operations: Axpy (aka TRIAD), Copy, FMA (fused multiply-add), and Add Mult.
 
 ***Version: 0.1.0***
 
@@ -15,22 +15,26 @@
 
 ### Operations
 
-  1. Axpy (Vector operation):
+  1. Axpy (a.k.a. TRIAD):
         Multiplies each element of one vector by a scalar and adds it to another vector.
-        d[i] = alpha * a[i] + b[i];
+
+            d[i] = alpha * a[i] + b[i];
 
   2. Copy:
-        Copies elements from one vector to another.
-        d[i] = a[i];
+      Copies elements from one vector to another.
+
+            d[i] = a[i];
 
   3. FMA (Fused Multiply-Add):
         Performs a multiply-add operation on vectors.
-        d[i] = a[i] * b[i] + c[i];
 
+            d[i] = a[i] * b[i] + c[i];
+        
   4. Add Mult (In this benchmark the amount of input and output data are equal):
         adds and multiply two vectors,
-        d[i] = a[i] + b[i];
-        c[i] = a[i] * b[i];
+
+            d[i] = a[i] + b[i];
+            c[i] = a[i] * b[i];
 
 ### Applications
 
