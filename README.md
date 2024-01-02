@@ -103,6 +103,8 @@ The VERBOSE macro can be used to enable/disable detailed output.
 
 ### Results
 
+See: [Results tables](RESULTS.md)
+
 ### Licensing
 
 The program is licensed under the GNU General Public License, allowing redistribution and modification under specific terms outlined by the Free Software Foundation.
