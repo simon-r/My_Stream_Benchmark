@@ -87,9 +87,11 @@ Reports average execution times, bandwidth and memory used for
 Axpy, Copy, and FMA operations.
 
 ### Tested compilers
-* GCC 13.2.1
+* GCC 7.5.0, 13.2.1
 * CLANG 16.0.6
-* icx (intel oneAPI) 2023.2.0 (2023.2.0.20230622)
+* icx 2023.2.0, 2023.0.0
+
+The support of c99 is required.
 
 ### Change compiler
       make CC={your_favorite_CC_compiler_cmd}
@@ -98,6 +100,8 @@ Axpy, Copy, and FMA operations.
 
 The program includes extensive comments documenting various functions, data structures, and calculations.
 The VERBOSE macro can be used to enable/disable detailed output.
+
+### Results
 
 ### Licensing
 
