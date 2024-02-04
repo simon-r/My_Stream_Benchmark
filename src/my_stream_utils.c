@@ -56,11 +56,12 @@ int is_number(char *str) {
   return 1;
 }
 
+
 /**
- * @brief
+ * Generates a random number using the given seed.
  *
- * @param seed
- * @return unsigned int
+ * @param seed The seed value for generating the random number.
+ * @return The generated random number.
  */
 unsigned int generate_random_number(unsigned int seed) {
   unsigned int magic = 214013;
@@ -70,6 +71,14 @@ unsigned int generate_random_number(unsigned int seed) {
   return (seed * a + magic) % m;
 }
 
+
+/**
+ * Calculates the elapsed time between two timespec structures.
+ *
+ * @param start The starting timespec structure.
+ * @param end The ending timespec structure.
+ * @return The elapsed time in milliseconds.
+ */
 double get_time(struct timespec start, struct timespec end) {
   double elapsed = (double)(end.tv_sec - start.tv_sec) *
                    (double)1000LL; // Convert seconds to milliseconds
@@ -79,16 +88,33 @@ double get_time(struct timespec start, struct timespec end) {
   return elapsed;
 }
 
-double compute_bandwidth(const unsigned int nr_cpu,      //
-                         const unsigned int nr_streams,  //
-                         const size_t batch_vec_size,    //
-                         const double average_time,      //
-                         const unsigned int word_size) { //
+/**
+ * Computes the bandwidth based on the given parameters.
+ *
+ * @param nr_cpu         The number of CPUs.
+ * @param nr_streams     The number of streams.
+ * @param batch_vec_size The size of the batch vector.
+ * @param average_time   The average time taken.
+ * @param word_size      The size of each word.
+ * @return               The computed bandwidth.
+ */
+double compute_bandwidth(const unsigned int nr_cpu,
+          const unsigned int nr_streams,
+          const size_t batch_vec_size,
+          const double average_time,
+          const unsigned int word_size) {
 
   return (double)nr_streams * (double)batch_vec_size * (double)nr_cpu *
-         (word_size) / (average_time / 1000.0);
+    (word_size) / (average_time / 1000.0);
 }
 
+/**
+ * Computes the average of the given vector.
+ *
+ * @param v The vector.
+ * @param n The size of the vector.
+ * @return  The average of the vector.
+ */
 double average(const double *v, unsigned int n) {
 
   double sum = 0;
@@ -100,6 +126,13 @@ double average(const double *v, unsigned int n) {
   return sum / (double)n;
 }
 
+/**
+ * Computes the variance of the given vector.
+ *
+ * @param v The vector.
+ * @param n The size of the vector.
+ * @return  The variance of the vector.
+ */
 double variance(const double *v, unsigned int n) {
 
   double avg = average(v, n);
@@ -111,4 +144,11 @@ double variance(const double *v, unsigned int n) {
   return sum / (double)n;
 }
 
+/**
+ * Computes the standard deviation of the given vector.
+ *
+ * @param v The vector.
+ * @param n The size of the vector.
+ * @return  The standard deviation of the vector.
+ */
 double std_dev(const double *v, unsigned int n) { return sqrt(variance(v, n)); }
