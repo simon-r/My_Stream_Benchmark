@@ -85,6 +85,7 @@ void fma_omp(struct streams_args *args) {
   for (int r = 0; r < args->benchmark_repetitions; r++) {
 
     clock_gettime(CLOCK_MONOTONIC, &start);
+
 #pragma omp parallel for
     for (size_t i = 0; i < vec_size; i++) {
       d[i] = a[i] * b[i] + c[i];
@@ -309,10 +310,10 @@ int main(int argc, char **argv) {
   struct streams_args args;
 
   args.vec_size = vec_size;
-  args.a = (float_type *)stream_calloc(64, vec_size, sizeof(float_type));
-  args.b = (float_type *)stream_calloc(64, vec_size, sizeof(float_type));
-  args.c = (float_type *)stream_calloc(64, vec_size, sizeof(float_type));
-  args.d = (float_type *)stream_calloc(64, vec_size, sizeof(float_type));
+  args.a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  args.b = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  args.c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  args.d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
 
   unsigned int r = 1;
   for (int i = 0; i < vec_size; i++) {
