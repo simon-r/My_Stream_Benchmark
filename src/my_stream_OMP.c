@@ -44,6 +44,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define VERBOSE
 #undef VERBOSE
 
+#define GLOBAL_ALLOC __GLOBAL_ALLOC__
+
 typedef double float_type;
 
 struct streams_args {
@@ -72,10 +74,26 @@ void fma_omp(struct streams_args *args) {
 
   const unsigned int vec_size = args->vec_size;
 
+#if GLOBAL_ALLOC == 1
   float_type *a = args->a;
   float_type *b = args->b;
   float_type *c = args->c;
   float_type *d = args->d;
+#elif GLOBAL_ALLOC == 0
+  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *b = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+
+  unsigned int r = 1;
+  for (int i = 0; i < vec_size; i++) {
+    r = generate_random_number(r);
+    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
+    b[i] = 1.0 + (float_type)(r % 400) / 300.0;
+    c[i] = 1.0 + (float_type)(r % 500) / 300.0;
+    d[i] = 0.0;
+  }
+#endif
 
   float_type consume_out = 0.0;
   double elapsed = 0.0;
@@ -105,6 +123,13 @@ void fma_omp(struct streams_args *args) {
 
   args->bandwidth = compute_bandwidth(1.0, 4.0, args->vec_size, args->clock,
                                       sizeof(float_type));
+
+#if GLOBAL_ALLOC == 0
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////
@@ -115,10 +140,25 @@ void axpy_omp(struct streams_args *args) {
 
   float_type alpha = 2.56;
 
+#if GLOBAL_ALLOC == 1
   float_type *a = args->a;
-  float_type *b = args->b;
   float_type *c = args->c;
   float_type *d = args->d;
+#elif GLOBAL_ALLOC == 0
+  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  // float_type *b = (float_type *)stream_calloc(8, vec_size,
+  // sizeof(float_type));
+  float_type *c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+
+  unsigned int r = 1;
+  for (int i = 0; i < vec_size; i++) {
+    r = generate_random_number(r);
+    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
+    c[i] = 1.0 + (float_type)(r % 500) / 300.0;
+    d[i] = 0.0;
+  }
+#endif
 
   float_type consume_out = 0.0;
   double elapsed = 0.0;
@@ -137,8 +177,8 @@ void axpy_omp(struct streams_args *args) {
 
     elapsed += get_time(start, end);
 
-    consume_out += a[rand() % vec_size] + b[rand() % vec_size] +
-                   c[rand() % vec_size] + d[rand() % vec_size];
+    consume_out +=
+        a[rand() % vec_size] + c[rand() % vec_size] + d[rand() % vec_size];
     // printf("n %f ", consume_out);
   }
 
@@ -147,6 +187,13 @@ void axpy_omp(struct streams_args *args) {
 
   args->bandwidth = compute_bandwidth(1.0, 3.0, args->vec_size, args->clock,
                                       sizeof(float_type));
+
+#if GLOBAL_ALLOC == 0
+  free(a);
+  // free(b);
+  free(c);
+  free(d);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////
@@ -155,8 +202,21 @@ void copy_omp(struct streams_args *args) {
 
   const unsigned int vec_size = args->vec_size;
 
+#if GLOBAL_ALLOC == 1
   float_type *a = args->a;
   float_type *d = args->d;
+
+#elif GLOBAL_ALLOC == 0
+  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+
+  unsigned int r = 1;
+  for (int i = 0; i < vec_size; i++) {
+    r = generate_random_number(r);
+    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
+    d[i] = 0.0;
+  }
+#endif
 
   float_type consume_out = 0.0;
   double elapsed = 0.0;
@@ -183,6 +243,11 @@ void copy_omp(struct streams_args *args) {
 
   args->bandwidth = compute_bandwidth(1.0, 2.0, args->vec_size, args->clock,
                                       sizeof(float_type));
+
+#if GLOBAL_ALLOC == 0
+  free(a);
+  free(d);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////
@@ -191,10 +256,26 @@ void addmul_omp(struct streams_args *args) {
 
   const unsigned int vec_size = args->vec_size;
 
+#if GLOBAL_ALLOC == 1
   float_type *a = args->a;
   float_type *b = args->b;
   float_type *c = args->c;
   float_type *d = args->d;
+#elif GLOBAL_ALLOC == 0
+  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *b = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+
+  unsigned int r = 1;
+  for (int i = 0; i < vec_size; i++) {
+    r = generate_random_number(r);
+    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
+    b[i] = 1.0 + (float_type)(r % 400) / 300.0;
+    c[i] = 1.0 + (float_type)(r % 500) / 300.0;
+    d[i] = 0.0;
+  }
+#endif
 
   float_type consume_out = 0.0;
   double elapsed = 0.0;
@@ -224,6 +305,13 @@ void addmul_omp(struct streams_args *args) {
 
   args->bandwidth = compute_bandwidth(1.0, 4.0, args->vec_size, args->clock,
                                       sizeof(float_type));
+
+#if GLOBAL_ALLOC == 0
+  free(a);
+  free(b);
+  free(c);
+  free(d);
+#endif
 }
 
 /**
@@ -235,7 +323,16 @@ void addmul_omp(struct streams_args *args) {
  */
 int main(int argc, char **argv) {
 
-  printf("Start My Stream  [OpenMP]\n------------------------\n\n");
+printf("\n");
+printf("-----------------------------------------------------------\n");
+
+#if GLOBAL_ALLOC == 1
+  printf("Start My Stream  [OpenMP] [Global Alloc]\n");
+#elif GLOBAL_ALLOC == 0
+  printf("Start My Stream  [OpenMP] [Local Alloc]\n");
+#else
+#error "GLOBAL_ALLOC must be 0 or 1"
+#endif
 
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
@@ -310,11 +407,22 @@ int main(int argc, char **argv) {
   struct streams_args args;
 
   args.vec_size = vec_size;
+
+#if GLOBAL_ALLOC == 1
   args.a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
   args.b = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
   args.c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
   args.d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+#elif GLOBAL_ALLOC == 0
+  args.a = NULL;
+  args.b = NULL;
+  args.c = NULL;
+  args.d = NULL;
+#else
+#error "GLOBAL_ALLOC must be 0 or 1"
+#endif
 
+#if GLOBAL_ALLOC == 1
   unsigned int r = 1;
   for (int i = 0; i < vec_size; i++) {
     r = generate_random_number(r);
@@ -323,6 +431,7 @@ int main(int argc, char **argv) {
     args.c[i] = 1.0 + (float_type)(r % 500) / 300.0;
     args.d[i] = 0.0;
   }
+#endif
 
   args.consume_out = 22.2;
   args.benchmark_repetitions = benchmark_repetitions;
