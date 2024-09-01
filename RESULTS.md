@@ -67,20 +67,20 @@ Compiler gcc 13.2
 
 ## Intel(R) Xeon(R) Platinum 8480+ (2x NUMA CPUs)
 
-------------------------------------------------------------------
-Start My Stream [MPI]
-------------------------------------------------------------------
+    ------------------------------------------------------------------
+    Start My Stream [MPI]
+    ------------------------------------------------------------------
 
-User defined vector size: 1000000000
+    User defined vector size: 1000000000
 
-------------------------------------------------------------------
-Number of MPI process:                 112
-Adjusted vector size:                  1000000512
-Mb Vector size per process:            68.119629
-Gb Vector size per process:            0.066523
-Gb Total allocated memory:             29.802338
-Repetitions:                           50
-------------------------------------------------------------------
+    ------------------------------------------------------------------
+    Number of MPI process:                 112
+    Adjusted vector size:                  1000000512
+    Mb Vector size per process:            68.119629
+    Gb Vector size per process:            0.066523
+    Gb Total allocated memory:             29.802338
+    Repetitions:                           50
+    ------------------------------------------------------------------
 
 Results:
 ------------------------------------------------------------------
