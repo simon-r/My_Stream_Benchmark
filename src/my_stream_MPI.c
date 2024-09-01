@@ -295,7 +295,8 @@ void add_mul_test(float_type *a, float_type *b, float_type *c, float_type *d,
       args->vec_size_proc * 4 * sizeof(float_type);
 }
 
-#define HLINE "------------------------------------------------------------------\n"
+#define HLINE                                                                  \
+  "------------------------------------------------------------------\n"
 
 int main(int argc, char **argv) {
 
@@ -450,15 +451,8 @@ int main(int argc, char **argv) {
   MPI_Barrier(MPI_COMM_WORLD);
   add_mul_test(a, b, c, d, &args[rank]);
 
-  if (rank == 0) {
-    for (int i = 1; i < world_size; i++) {
-      MPI_Recv(&args[i], sizeof(struct streams_args), MPI_CHAR, i, 0,
-               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    }
-  } else {
-    MPI_Send(&args[rank], sizeof(struct streams_args), MPI_CHAR, 0, 0,
-             MPI_COMM_WORLD);
-  }
+  MPI_Gather(&args[rank], sizeof(struct streams_args), MPI_CHAR, args,
+             sizeof(struct streams_args), MPI_CHAR, 0, MPI_COMM_WORLD);
 
   double FMA_total_bandwidth = 0.0;
   double copy_total_bandwidth = 0.0;
@@ -501,8 +495,8 @@ int main(int argc, char **argv) {
            clock_copy);
     printf("axpy (TRIAD):   %.3f GB/s,          %f ms\n", axpy_total_bandwidth,
            clock_axpy);
-    printf("add mul:        %.3f GB/s,          %f ms\n", add_mul_total_bandwidth,
-           clock_add_mul);
+    printf("add mul:        %.3f GB/s,          %f ms\n",
+           add_mul_total_bandwidth, clock_add_mul);
 
     printf("\n");
     printf(HLINE);

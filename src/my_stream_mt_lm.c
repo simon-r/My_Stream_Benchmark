@@ -468,7 +468,7 @@ int main(int argc, char **argv) {
 
   printf("\n-----------------------------------------------------------\n");
   printf("Number of CPU:             %d\n", nr_cpu);
-  printf("Corrected vector size:     %lu\n", vec_size);
+  printf("Adjusted vector size:      %lu\n", vec_size);
   printf("Mb Vector size:            %f [Mb]\n", Mb_vec_size);
   printf("Gb Vector size:            %f [Gb]\n", Gb_vec_size);
   printf("Gb Total allocated memory: %f [Gb]\n", Gb_vec_size * 4);
