@@ -8,7 +8,7 @@
 
 ### Key Components
 
-* Libraries included: OpenMP, pthread, semaphore, stdio, stdlib, time.
+* Libraries included: OpenMP, MPI, pthread, semaphore, stdio, stdlib, time.
 * Data types: It uses a typedef float_type as double.
 * Vector operations: Uses SIMD (Single Instruction, Multiple Data) capabilities to efficiently process vectors.
 * MPI (OpenMPI or MPICH)
