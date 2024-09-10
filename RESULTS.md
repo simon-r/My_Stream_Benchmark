@@ -93,7 +93,7 @@ Compiler gcc 13.2
 
     ------------------------------------------------------------------
 
-## Nividia Grace CPU [4xNUMA CPUs]
+## NVidia Grace CPU [4xNUMA CPUs]
 
     ------------------------------------------------------------------
     Start My Stream [MPI]
