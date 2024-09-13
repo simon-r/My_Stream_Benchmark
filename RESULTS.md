@@ -3,7 +3,7 @@
 Compiler gcc 13.2
 
     ------------------------------------------------------------------
-    Number of MPI process:                 36
+    Number of MPI processes:                 36
     Adjusted vector size:                  500000256
     Mb Vector size per process:            105.963867
     Gb Vector size per process:            0.103480
@@ -74,7 +74,7 @@ Compiler gcc 13.2
     User defined vector size: 1000000000
 
     ------------------------------------------------------------------
-    Number of MPI process:                 112
+    Number of MPI processes:                 112
     Adjusted vector size:                  1000000512
     Mb Vector size per process:            68.119629
     Gb Vector size per process:            0.066523
