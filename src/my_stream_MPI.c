@@ -401,7 +401,7 @@ int main(int argc, char **argv) {
   if (rank == 0) {
     printf("\n");
     printf(HLINE);
-    printf("Number of MPI process:                 %d\n", world_size);
+    printf("Number of MPI processes:                 %d\n", world_size);
     printf("Adjusted vector size:                  %lu\n", vec_size);
     printf("Mb Vector size per process:            %f\n", Mb_vec_size);
     printf("Gb Vector size per process:            %f\n", Gb_vec_size);
