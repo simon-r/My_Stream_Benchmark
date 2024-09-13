@@ -1,3 +1,17 @@
+# Results
+
+
+## Table of Contents
+
+- [Intel(R) Xeon(R) CPU E5-2695 v4 @ 2.10GHz (2x NUMA CPUs)](#intelr-xeonr-cpu-e5-2695-v4--210ghz-2x-numa-cpus)
+    - [Multi Threads - Local Memory](#multi-threads---local-memory)
+    - [Multi Threads - Global Memory](#multi-threads---global-memory)
+    - [OpenMP](#openmp)
+    - [MPI](#mpi)
+- [Intel(R) Xeon(R) Platinum 8480+ (2x NUMA CPUs)](#intelr-xeonr-platinum-8480-2x-numa-cpus)
+- [NVIDIA Grace CPU [4x NUMA CPUs]](#nvidia-grace-cpu-4x-numa-cpus)
+- [AMD EPYC 7742 64-Core (2x NUMA CPUs)](#amd-epyc-7742-64-core-2x-numa-cpus)
+
 ## Intel(R) Xeon(R) CPU E5-2695 v4 @ 2.10GHz (2x NUMA CPUs)
 
 Compiler gcc 13.2
@@ -91,7 +105,7 @@ Compiler gcc 13.2
 
     ------------------------------------------------------------------
 
-## NVidia Grace CPU [4xNUMA CPUs]
+## NVIDIA Grace CPU [4x NUMA CPUs]
 
     ------------------------------------------------------------------
     Start My Stream [MPI]

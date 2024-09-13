@@ -13,6 +13,10 @@
 * Vector operations: Uses SIMD (Single Instruction, Multiple Data) capabilities to efficiently process vectors.
 * MPI (OpenMPI or MPICH)
 
+### Results
+
+See: [Results tables](RESULTS.md)
+
 ### Operations
 
   1. Axpy (a.k.a. TRIAD):
@@ -101,9 +105,7 @@ The support of c99 is required.
 The program includes extensive comments documenting various functions, data structures, and calculations.
 The VERBOSE macro can be used to enable/disable detailed output.
 
-### Results
 
-See: [Results tables](RESULTS.md)
 
 ### Licensing
 

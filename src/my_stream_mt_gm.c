@@ -35,6 +35,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 #include <time.h>
 
+#include "my_stream_utils.h"
+
 #define DEFAULT_TEST_SIZE 50000000
 
 #define VECTOR_LEN 8
@@ -48,55 +50,9 @@ typedef double float_type;
 
 sem_t semaphore;
 
-char *find_command_line_arg_value(int argc, char *argv[], const char *arg) {
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], arg) == 0) {
-      // Check if the next argument exists and is not another command
-      if (i + 1 < argc && argv[i + 1][0] != '-') {
-        return argv[i + 1]; // Return pointer to the value
-      } else {
-        return NULL; // No value or next argument is a command
-      }
-    }
-  }
-  return NULL; // Argument not found
-}
-
-int flag_exists(int argc, char *argv[], const char *flag) {
-  for (int i = 1; i < argc; i++) {
-    if (strcmp(argv[i], flag) == 0) {
-      return 1; // Return 1 if the flag is found
-    }
-  }
-  return 0; // Return 0 if the flag is not found
-}
-
-int is_number(char *str) {
-  for (int i = 0; str[i] != '\0'; i++) {
-    if (str[i] < '0' || str[i] > '9') {
-      return 0;
-    }
-  }
-  return 1;
-}
-
 typedef float_type vector_type
     __attribute__((vector_size(VECTOR_LEN * sizeof(float_type)), //
                    aligned(sizeof(float_type))));                //
-
-/**
- * @brief
- *
- * @param seed
- * @return unsigned int
- */
-unsigned int generate_random_number(unsigned int seed) {
-  unsigned int magic = 214013;
-  unsigned int m = 1 << 31;
-  unsigned int a = 16807;
-
-  return (seed * a + magic) % m;
-}
 
 struct streams_args {
   float_type *a;
@@ -350,7 +306,8 @@ void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
  */
 int main(int argc, char **argv) {
 
-  printf("Start My Stream [Multi Threads - Global Memory]\n------------------------\n\n");
+  printf("Start My Stream [Multi Threads - Global "
+         "Memory]\n------------------------\n\n");
 
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;

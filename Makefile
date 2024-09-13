@@ -1,5 +1,5 @@
 
-CC_FLAGS = -Ofast -fopenmp -march=native -Wall
+CC_FLAGS ?= -Ofast -fopenmp -march=native -Wall
 LINK_FLAGS = -lpthread -lm
 
 ifeq ($(CC),icx)
@@ -20,8 +20,11 @@ MPICC=mpicc
 all: mt mt_lm omp omp_loc mpi
 
 ############################################################
-mt: src/my_stream_mt_gm.c
-	${CC} -o ${TARGET} src/my_stream_mt_gm.c ${CC_FLAGS} ${LINK_FLAGS} 
+mt: src/my_stream_utils.o src/my_stream_mt_gm.o
+	${CC}  src/my_stream_utils.o src/my_stream_mt_gm.o -o ${TARGET} ${CC_FLAGS} ${LINK_FLAGS}
+
+src/my_stream_mt_gm.o: src/my_stream_mt_gm.c
+	${CC} -c src/my_stream_mt_gm.c -o src/my_stream_mt_gm.o ${CC_FLAGS}
 
 ############################################################
 mt_lm: src/my_stream_utils.o src/my_stream_mt_lm.o
@@ -30,8 +33,7 @@ mt_lm: src/my_stream_utils.o src/my_stream_mt_lm.o
 src/my_stream_mt_lm.o: src/my_stream_mt_lm.c
 	${CC} -c src/my_stream_mt_lm.c -o src/my_stream_mt_lm.o ${CC_FLAGS}
 
-src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
-	${CC}  -c  src/my_stream_utils.c -o src/my_stream_utils.o  ${CC_FLAGS}
+
 
 ############################################################
 omp: src/my_stream_utils.o src/my_stream_OMP.o
@@ -40,8 +42,7 @@ omp: src/my_stream_utils.o src/my_stream_OMP.o
 src/my_stream_OMP.o: src/my_stream_OMP.c
 	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS} -D__GLOBAL_ALLOC__=1
 
-src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
-	${CC}  -c  src/my_stream_utils.c -o src/my_stream_utils.o  ${CC_FLAGS}
+
 
 
 ############################################################
@@ -51,8 +52,7 @@ omp_loc: src/my_stream_utils.o src/my_stream_OMP_loc.o
 src/my_stream_OMP_loc.o: src/my_stream_OMP.c
 	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS} -D__GLOBAL_ALLOC__=0
 
-src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
-	${CC}  -c  src/my_stream_utils.c -o src/my_stream_utils.o  ${CC_FLAGS}
+
 
 
 ############################################################
@@ -62,8 +62,9 @@ mpi: src/my_stream_utils.o src/my_stream_MPI.o
 src/my_stream_MPI.o: src/my_stream_MPI.c
 	${MPICC} -c src/my_stream_MPI.c -o src/my_stream_MPI.o ${CC_FLAGS}
 
+############################################################
 src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
-	${MPICC}  -c src/my_stream_utils.c -o src/my_stream_utils.o  ${CC_FLAGS}
+	${CC}  -c src/my_stream_utils.c -o src/my_stream_utils.o  ${CC_FLAGS}
 
 
 clean:
