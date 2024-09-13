@@ -451,8 +451,18 @@ int main(int argc, char **argv) {
   MPI_Barrier(MPI_COMM_WORLD);
   add_mul_test(a, b, c, d, &args[rank]);
 
-  MPI_Gather(&args[rank], sizeof(struct streams_args), MPI_CHAR, args,
-             sizeof(struct streams_args), MPI_CHAR, 0, MPI_COMM_WORLD);
+  if (rank == 0) {
+    for (int i = 1; i < world_size; i++) {
+      MPI_Recv(&args[i], sizeof(struct streams_args), MPI_CHAR, i, 0,
+               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+  } else {
+    MPI_Send(&args[rank], sizeof(struct streams_args), MPI_CHAR, 0, 0,
+             MPI_COMM_WORLD);
+  }
+
+ // MPI_Gather(&args[rank], sizeof(struct streams_args), MPI_CHAR, args,
+ //            sizeof(struct streams_args), MPI_CHAR, 0, MPI_COMM_WORLD);
 
   double FMA_total_bandwidth = 0.0;
   double copy_total_bandwidth = 0.0;
