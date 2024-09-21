@@ -80,10 +80,10 @@ void fma_omp(struct streams_args *args) {
   float_type *c = args->c;
   float_type *d = args->d;
 #elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *b = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *b = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
 
   unsigned int r = 1;
   for (int i = 0; i < vec_size; i++) {
@@ -145,11 +145,11 @@ void axpy_omp(struct streams_args *args) {
   float_type *c = args->c;
   float_type *d = args->d;
 #elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  // float_type *b = (float_type *)stream_calloc(8, vec_size,
+  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  // float_type *b = (float_type *)stream_calloc(1024, vec_size,
   // sizeof(float_type));
-  float_type *c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
 
   unsigned int r = 1;
   for (int i = 0; i < vec_size; i++) {
@@ -207,8 +207,8 @@ void copy_omp(struct streams_args *args) {
   float_type *d = args->d;
 
 #elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
 
   unsigned int r = 1;
   for (int i = 0; i < vec_size; i++) {
@@ -262,10 +262,10 @@ void addmul_omp(struct streams_args *args) {
   float_type *c = args->c;
   float_type *d = args->d;
 #elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *b = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *b = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
 
   unsigned int r = 1;
   for (int i = 0; i < vec_size; i++) {
@@ -409,10 +409,10 @@ printf("-----------------------------------------------------------\n");
   args.vec_size = vec_size;
 
 #if GLOBAL_ALLOC == 1
-  args.a = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  args.b = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  args.c = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
-  args.d = (float_type *)stream_calloc(8, vec_size, sizeof(float_type));
+  args.a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  args.b = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  args.c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+  args.d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
 #elif GLOBAL_ALLOC == 0
   args.a = NULL;
   args.b = NULL;
