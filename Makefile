@@ -1,9 +1,9 @@
 
-CC_FLAGS ?= -Ofast -fopenmp -march=native -Wall
+CC_FLAGS ?= -Ofast -fopenmp -march=native -Wall  -mcmodel=large
 LINK_FLAGS = -lpthread -lm
 
 ifeq ($(CC),icx)
-    CC_FLAGS = -Ofast -march=native -qopenmp -Wall 
+    CC_FLAGS = -Ofast -march=native -qopenmp -Wall -mcmodel=large
 endif
 
 TARGET=my_stream_mt_gm.exe
