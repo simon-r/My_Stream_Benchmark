@@ -200,15 +200,15 @@ void print_performance_metrics(double bandwidth_axpy, double avg_clock_axpy,
                                double bandwidth_addmul, double avg_clock_addmul,
                                double to_Gb) {
     printf("\n-----------------------------------------------------------\n");
-    printf("Test          Bandwidth [Gb/s]     Avg. Clock [ms]\n");
+    printf("Test          Bandwidth [Gb/s]            Avg. Clock [ms]\n");
     printf("-----------------------------------------------------------\n");
-    printf("AXPY:         %5.3f [Gb/s]         %5.3f [ms]\n", bandwidth_axpy / to_Gb,
+    printf("AXPY:         %10.3f [Gb/s]         %10.3f [ms]\n", bandwidth_axpy / to_Gb,
            avg_clock_axpy);
-    printf("FMA:          %5.3f [Gb/s]         %5.3f [ms]\n", bandwidth_fma / to_Gb,
+    printf("FMA:          %10.3f [Gb/s]         %10.3f [ms]\n", bandwidth_fma / to_Gb,
            avg_clock_fma);
-    printf("COPY:         %5.3f [Gb/s]         %5.3f [ms]\n", bandwidth_copy / to_Gb,
+    printf("COPY:         %10.3f [Gb/s]         %10.3f [ms]\n", bandwidth_copy / to_Gb,
            avg_clock_copy);
-    printf("ADDMUL:       %5.3f [Gb/s]         %5.3f [ms]\n", bandwidth_addmul / to_Gb,
+    printf("ADDMUL:       %10.3f [Gb/s]         %10.3f [ms]\n", bandwidth_addmul / to_Gb,
            avg_clock_addmul);
     printf("-----------------------------------------------------------\n\n");
 }

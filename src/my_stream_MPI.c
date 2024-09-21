@@ -397,8 +397,8 @@ int main(int argc, char **argv) {
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * world_size;
   size_t vec_size_proc = vec_size / world_size;
 
-  double to_Mb = (1024.0 * 1024.0);
-  double to_Gb = (1024.0 * 1024.0 * 1024.0);
+  // double to_Mb = (1024.0 * 1024.0);
+  // double to_Gb = (1024.0 * 1024.0 * 1024.0);
 
   double bytes_vec_size = (double)(vec_size_proc * sizeof(float_type));
   double Mb_vec_size = bytes_vec_size / to_Mb;
@@ -407,11 +407,11 @@ int main(int argc, char **argv) {
   if (rank == 0) {
     printf("\n");
     printf(HLINE);
-    printf("Number of MPI processes:                 %d\n", world_size);
-    printf("Adjusted vector size:                  %lu\n", vec_size);
-    printf("Mb Vector size per process:            %f\n", Mb_vec_size);
-    printf("Gb Vector size per process:            %f\n", Gb_vec_size);
-    printf("Gb Total allocated memory:             %f\n",
+    printf("Number of MPI processes:               %d\n", world_size);
+    printf("Adjusted vector size:                  %lu elements\n", vec_size);
+    printf("MB Vector size per process:            %f MB\n", Mb_vec_size);
+    printf("GB Vector size per process:            %f GB\n", Gb_vec_size);
+    printf("GB Total allocated memory:             %f GB\n",
            (Gb_vec_size * 4 * world_size));
     printf("Repetitions:                           %d\n",
            benchmark_repetitions);
@@ -505,13 +505,13 @@ int main(int argc, char **argv) {
     printf(HLINE);
     printf("Test            Total bandwidth        clock  \n");
     printf(HLINE);
-    printf("FMA:            %.3f GB/s,          %f ms\n", FMA_total_bandwidth,
+    printf("FMA:            %8.3f GB/s,          %5.3f ms\n", FMA_total_bandwidth,
            clock_FMA);
-    printf("copy:           %.3f GB/s,          %f ms\n", copy_total_bandwidth,
+    printf("copy:           %8.3f GB/s,          %5.3f ms\n", copy_total_bandwidth,
            clock_copy);
-    printf("axpy (TRIAD):   %.3f GB/s,          %f ms\n", axpy_total_bandwidth,
+    printf("axpy (TRIAD):   %8.3f GB/s,          %5.3f ms\n", axpy_total_bandwidth,
            clock_axpy);
-    printf("add mul:        %.3f GB/s,          %f ms\n",
+    printf("add mul:        %8.3f GB/s,          %5.3f ms\n",
            add_mul_total_bandwidth, clock_add_mul);
 
     printf("\n");

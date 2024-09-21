@@ -49,7 +49,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 typedef double float_type;
 
 void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
-  return (void *)aligned_alloc(__alignment, vector_len * type_size);
+  // return (void *)aligned_alloc(__alignment, vector_len * type_size);
+  return (void *)omp_aligned_alloc(__alignment, vector_len * type_size,
+                                   omp_get_default_allocator());
 }
 
 int main(int argc, char *argv[]) {
@@ -215,10 +217,10 @@ int main(int argc, char *argv[]) {
       // printf("n %f ", consume_out);
     }
 
-    free(a);
-    free(b);
-    free(c);
-    free(d);
+    omp_free(a, omp_get_default_allocator());
+    omp_free(b, omp_get_default_allocator());
+    omp_free(c, omp_get_default_allocator());
+    omp_free(d, omp_get_default_allocator());
   }
 
   double avg_clock_axpy = average(clock_axpy, benchmark_repetitions);
@@ -237,6 +239,8 @@ int main(int argc, char *argv[]) {
                         vec_size,                              //
                         avg_clock_addmul, sizeof(float_type)); //
 
+  printf("\n-----------------------------------------------------------\n");
+  printf("RESULTS OpenMP\n");
   print_performance_metrics(bandwidth_axpy, avg_clock_axpy, bandwidth_fma,
                             avg_clock_fma, bandwidth_copy, avg_clock_copy,
                             bandwidth_addmul, avg_clock_addmul, to_Gb);
