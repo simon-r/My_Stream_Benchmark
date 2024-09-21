@@ -9,6 +9,7 @@ endif
 TARGET=my_stream_mt_gm.exe
 TARGET_mt_lm=my_stream_mt_lm.exe
 TARGET_OMP=my_stream_OMP.exe
+TARGET_OMP_V2=my_stream_OMP_v2.exe
 TARGET_OMP_LOC=my_stream_OMP_loc.exe
 TARGET_MPI=my_stream_MPI.exe
 
@@ -17,7 +18,7 @@ export OMPI_CC=${CC}
 
 MPICC=mpicc 
 
-all: mt mt_lm omp omp_loc mpi
+all: mt mt_lm omp omp_loc omp_v2 mpi
 
 ############################################################
 mt: src/my_stream_utils.o src/my_stream_mt_gm.o
@@ -43,6 +44,11 @@ src/my_stream_OMP.o: src/my_stream_OMP.c
 	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS} -D__GLOBAL_ALLOC__=1
 
 
+omp_v2: src/my_stream_utils.o src/my_stream_OMP_v2.o
+	${CC}  src/my_stream_utils.o src/my_stream_OMP_v2.o -o ${TARGET_OMP_V2} ${CC_FLAGS} ${LINK_FLAGS}
+
+src/my_stream_OMP_v2.o: src/my_stream_OMP_v2.c
+	${CC} -c src/my_stream_OMP_v2.c -o src/my_stream_OMP_v2.o ${CC_FLAGS}
 
 
 ############################################################
