@@ -4,7 +4,7 @@
 
 **My_Stream**, is a collection of benchmarks designed to test memory bandwidth (in Mb/s and Gb/s). To measure the bandwidth, it performs four "memory bound" vector operations: Axpy (aka TRIAD), Copy, FMA (fused multiply-add), and Add Mult.
 
-***Version: 0.1.0***
+***Version: 0.2.0***
 
 ### Key Components
 
@@ -44,7 +44,7 @@ See: [Results tables](RESULTS.md)
 
 My stream consists of three application which perform the memory bandwidth benchmark in three different conditions:
 
-* **my_stream_OMP** The original stream benchmark approach based on OpenMP.
+* **my_stream_OMP_v2** The original stream benchmark approach based on OpenMP.
 
 * **my_stream_mt_gm** It executes a number of threads that is equal to the number of CPU and performs the operation on different portions of pages of memory allocated globally by the main thread.
 
