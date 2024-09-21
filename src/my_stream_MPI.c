@@ -357,6 +357,12 @@ int main(int argc, char **argv) {
       if (rank == 0)
         printf("User defined vector size: %lu\n", vec_size);
 
+      if (rank == 0) {
+#ifdef COMPILER
+        printf("Compiler: %s\n\n", COMPILER);
+#endif
+      }
+
     } else {
 
       if (rank == 0)
@@ -461,8 +467,8 @@ int main(int argc, char **argv) {
              MPI_COMM_WORLD);
   }
 
- // MPI_Gather(&args[rank], sizeof(struct streams_args), MPI_CHAR, args,
- //            sizeof(struct streams_args), MPI_CHAR, 0, MPI_COMM_WORLD);
+  // MPI_Gather(&args[rank], sizeof(struct streams_args), MPI_CHAR, args,
+  //            sizeof(struct streams_args), MPI_CHAR, 0, MPI_COMM_WORLD);
 
   double FMA_total_bandwidth = 0.0;
   double copy_total_bandwidth = 0.0;

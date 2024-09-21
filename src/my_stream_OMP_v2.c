@@ -58,7 +58,11 @@ int main(int argc, char *argv[]) {
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
   const int nr_cpu = omp_get_num_procs();
 
-  printf("Start My Stream  [OpenMP]\n");
+  printf("Start My Stream  [OpenMP]\n\n");
+
+#ifdef COMPILER
+  printf("Compiler: %s\n\n", COMPILER);
+#endif
 
   if (flag_exists(argc, argv, "-h") | flag_exists(argc, argv, "--help")) {
     print_help(argv);

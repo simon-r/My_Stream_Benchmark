@@ -457,6 +457,8 @@ int main(int argc, char **argv) {
     }
   }
 
+  printf("Compiler: %s\n\n", COMPILER);
+
   // get the number of cpu from open mp
   const int nr_cpu = omp_get_num_procs();
   vec_size = vec_size / nr_cpu;

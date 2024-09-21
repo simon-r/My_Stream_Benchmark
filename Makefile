@@ -20,6 +20,14 @@ MPICC=mpicc
 
 all: mt mt_lm omp omp_loc omp_v2 mpi
 
+# set a string with the name of the used compiler
+COMPILER = $(shell ${CC} --version | head -n 1)
+
+CC_FLAGS += -DCOMPILER="\"${COMPILER}\""
+
+# print the compiler version
+$(info Compiler: ${COMPILER})
+
 ############################################################
 mt: src/my_stream_utils.o src/my_stream_mt_gm.o
 	${CC}  src/my_stream_utils.o src/my_stream_mt_gm.o -o ${TARGET} ${CC_FLAGS} ${LINK_FLAGS}
@@ -33,8 +41,6 @@ mt_lm: src/my_stream_utils.o src/my_stream_mt_lm.o
 
 src/my_stream_mt_lm.o: src/my_stream_mt_lm.c
 	${CC} -c src/my_stream_mt_lm.c -o src/my_stream_mt_lm.o ${CC_FLAGS}
-
-
 
 ############################################################
 omp: src/my_stream_utils.o src/my_stream_OMP.o

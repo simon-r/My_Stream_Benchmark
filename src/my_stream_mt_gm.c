@@ -348,6 +348,8 @@ int main(int argc, char **argv) {
     }
   }
 
+  printf("Compiler: %s\n\n", COMPILER);
+
   char *benchmark_repetitions_arg =
       find_command_line_arg_value(argc, argv, "-r");
 
