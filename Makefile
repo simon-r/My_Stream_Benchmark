@@ -23,7 +23,11 @@ all: mt mt_lm omp omp_loc omp_v2 mpi
 # set a string with the name of the used compiler
 COMPILER = $(shell ${CC} --version | head -n 1)
 
-CC_FLAGS += -DCOMPILER="\"${COMPILER}\""
+# capture the system architecture
+ARCHITECTURE = $(shell uname -m)
+
+CC_FLAGS += -DCOMPILER="\"${COMPILER}\"" -DARCHITECTURE="\"${ARCHITECTURE}\""
+
 
 # print the compiler version
 $(info Compiler: ${COMPILER})
