@@ -49,9 +49,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 typedef double float_type;
 
 void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
-   return (void *)aligned_alloc(__alignment, vector_len * type_size);
-//  return (void *)omp_aligned_alloc(__alignment, vector_len * type_size,
-//                                   omp_get_default_allocator());
+  return (void *)aligned_alloc(__alignment, vector_len * type_size);
+  //  return (void *)omp_aligned_alloc(__alignment, vector_len * type_size,
+  //                                   omp_get_default_allocator());
+}
+
+void stream_free(void *ptr) {
+  free(ptr);
+  // omp_free(ptr, omp_get_default_allocator());
 }
 
 int main(int argc, char *argv[]) {
@@ -217,16 +222,15 @@ int main(int argc, char *argv[]) {
       // printf("n %f ", consume_out);
     }
 
-//    omp_free(a, omp_get_default_allocator());
-//    omp_free(b, omp_get_default_allocator());
-//    omp_free(c, omp_get_default_allocator());
-//    omp_free(d, omp_get_default_allocator());
-//
-      free(a);
-      free(b);
-      free(c);
-      free(d);
-
+    //    omp_free(a, omp_get_default_allocator());
+    //    omp_free(b, omp_get_default_allocator());
+    //    omp_free(c, omp_get_default_allocator());
+    //    omp_free(d, omp_get_default_allocator());
+    //
+    stream_free(a);
+    stream_free(b);
+    stream_free(c);
+    stream_free(d);
   }
 
   double avg_clock_axpy = average(clock_axpy, benchmark_repetitions);

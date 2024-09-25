@@ -84,4 +84,4 @@ src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
 
 
 clean:
-	rm ${TARGET} ${TARGET_mt_lm} ${TARGET_OMP} ${TARGET_MPI} ${PWD}/src/*.o
+	rm ${TARGET} ${TARGET_mt_lm} ${TARGET_OMP} ${TARGET_MPI} ${PWD}/src/*.o ${TARGET_OMP_V2} ${TARGET_OMP_LOC}
