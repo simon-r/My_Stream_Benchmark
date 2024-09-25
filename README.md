@@ -44,13 +44,13 @@ See: [Results tables](RESULTS.md)
 
 My stream consists of three application which perform the memory bandwidth benchmark in three different conditions:
 
-* **my_stream_OMP_v2** The original stream benchmark approach based on OpenMP.
+* **my_stream_OMP** The original stream benchmark approach based on OpenMP.
 
 * **my_stream_mt_gm** It executes a number of threads that is equal to the number of CPU and performs the operation on different portions of pages of memory allocated globally by the main thread.
 
 * **my_stream_mt_lm**  It executes a number of threads that is equal to the number of CPU and performs the operation on pages of memory allocated locally in the threads.
 
-* **my_stream_MPI** Test based on MPI.
+* **my_stream_MPI** Test based on MPI. This is the test which allows the maximal bandwidth.
 
 ### Usage
 

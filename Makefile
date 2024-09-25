@@ -6,11 +6,11 @@ ifeq ($(CC),icx)
     CC_FLAGS = -Ofast -march=native -qopenmp -Wall -mcmodel=large
 endif
 
-TARGET=my_stream_mt_gm.exe
+TARGET_mt_gm=my_stream_mt_gm.exe
 TARGET_mt_lm=my_stream_mt_lm.exe
-TARGET_OMP=my_stream_OMP.exe
-TARGET_OMP_V2=my_stream_OMP_v2.exe
-TARGET_OMP_LOC=my_stream_OMP_loc.exe
+# TARGET_OMP=my_stream_OMP.exe
+TARGET_OMP_V2=my_stream_OMP.exe
+# TARGET_OMP_LOC=my_stream_OMP_loc.exe
 TARGET_MPI=my_stream_MPI.exe
 
 export MPICH_CC=${CC}
@@ -18,7 +18,9 @@ export OMPI_CC=${CC}
 
 MPICC=mpicc 
 
-all: mt mt_lm omp omp_loc omp_v2 mpi
+.PHONY: all clean
+
+all: mt_gm mt_lm omp mpi
 
 # set a string with the name of the used compiler
 COMPILER = $(shell ${CC} --version | head -n 1)
@@ -33,46 +35,56 @@ CC_FLAGS += -DCOMPILER="\"${COMPILER}\"" -DARCHITECTURE="\"${ARCHITECTURE}\""
 $(info Compiler: ${COMPILER})
 
 ############################################################
-mt: src/my_stream_utils.o src/my_stream_mt_gm.o
-	${CC}  src/my_stream_utils.o src/my_stream_mt_gm.o -o ${TARGET} ${CC_FLAGS} ${LINK_FLAGS}
+mt_gm: $(TARGET_mt_gm)
+
+${TARGET_mt_gm}: src/my_stream_utils.o src/my_stream_mt_gm.o
+	${CC}  src/my_stream_utils.o src/my_stream_mt_gm.o -o ${TARGET_mt_gm} ${CC_FLAGS} ${LINK_FLAGS}
 
 src/my_stream_mt_gm.o: src/my_stream_mt_gm.c
 	${CC} -c src/my_stream_mt_gm.c -o src/my_stream_mt_gm.o ${CC_FLAGS}
 
 ############################################################
-mt_lm: src/my_stream_utils.o src/my_stream_mt_lm.o
+mt_lm: $(TARGET_mt_lm)
+
+$(TARGET_mt_lm): src/my_stream_utils.o src/my_stream_mt_lm.o
 	${CC}  src/my_stream_utils.o src/my_stream_mt_lm.o -o ${TARGET_mt_lm} ${CC_FLAGS} ${LINK_FLAGS}
 
 src/my_stream_mt_lm.o: src/my_stream_mt_lm.c
 	${CC} -c src/my_stream_mt_lm.c -o src/my_stream_mt_lm.o ${CC_FLAGS}
 
+# ############################################################
+# omp: $(TARGET_OMP)
+
+# $(TARGET_OMP): src/my_stream_utils.o src/my_stream_OMP.o
+# 	${CC}  src/my_stream_utils.o src/my_stream_OMP.o -o ${TARGET_OMP} ${CC_FLAGS} ${LINK_FLAGS} 
+
+# src/my_stream_OMP.o: src/my_stream_OMP.c
+# 	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS} -D__GLOBAL_ALLOC__=1
+
+
 ############################################################
-omp: src/my_stream_utils.o src/my_stream_OMP.o
-	${CC}  src/my_stream_utils.o src/my_stream_OMP.o -o ${TARGET_OMP} ${CC_FLAGS} ${LINK_FLAGS} 
+omp: $(TARGET_OMP_V2)
+
+$(TARGET_OMP_V2): src/my_stream_utils.o src/my_stream_OMP.o
+	${CC}  src/my_stream_utils.o src/my_stream_OMP.o -o ${TARGET_OMP_V2} ${CC_FLAGS} ${LINK_FLAGS}
 
 src/my_stream_OMP.o: src/my_stream_OMP.c
-	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS} -D__GLOBAL_ALLOC__=1
+	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS}
 
 
-omp_v2: src/my_stream_utils.o src/my_stream_OMP_v2.o
-	${CC}  src/my_stream_utils.o src/my_stream_OMP_v2.o -o ${TARGET_OMP_V2} ${CC_FLAGS} ${LINK_FLAGS}
+# ############################################################
+# omp_loc: $(TARGET_OMP_LOC)
 
-src/my_stream_OMP_v2.o: src/my_stream_OMP_v2.c
-	${CC} -c src/my_stream_OMP_v2.c -o src/my_stream_OMP_v2.o ${CC_FLAGS}
+# $(TARGET_OMP_LOC): src/my_stream_utils.o src/my_stream_OMP_loc.o
+# 	${CC}  src/my_stream_utils.o src/my_stream_OMP.o -o ${TARGET_OMP_LOC} ${CC_FLAGS} ${LINK_FLAGS} 
 
-
-############################################################
-omp_loc: src/my_stream_utils.o src/my_stream_OMP_loc.o
-	${CC}  src/my_stream_utils.o src/my_stream_OMP.o -o ${TARGET_OMP_LOC} ${CC_FLAGS} ${LINK_FLAGS} 
-
-src/my_stream_OMP_loc.o: src/my_stream_OMP.c
-	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS} -D__GLOBAL_ALLOC__=0
-
-
-
+# src/my_stream_OMP_loc.o: src/my_stream_OMP.c
+# 	${CC} -c src/my_stream_OMP.c -o src/my_stream_OMP.o ${CC_FLAGS} -D__GLOBAL_ALLOC__=0
 
 ############################################################
-mpi: src/my_stream_utils.o src/my_stream_MPI.o
+mpi: $(TARGET_MPI)
+
+$(TARGET_MPI): src/my_stream_utils.o src/my_stream_MPI.o
 	${MPICC} src/my_stream_utils.o src/my_stream_MPI.o -o ${TARGET_MPI} ${CC_FLAGS} ${LINK_FLAGS}
 
 src/my_stream_MPI.o: src/my_stream_MPI.c
@@ -84,4 +96,4 @@ src/my_stream_utils.o: src/my_stream_utils.c src/my_stream_utils.h
 
 
 clean:
-	rm ${TARGET} ${TARGET_mt_lm} ${TARGET_OMP} ${TARGET_MPI} ${PWD}/src/*.o ${TARGET_OMP_V2} ${TARGET_OMP_LOC}
+	rm ${TARGET_mt_gm} ${TARGET_mt_lm} ${TARGET_OMP} ${TARGET_MPI} ${PWD}/src/*.o ${TARGET_OMP_V2} ${TARGET_OMP_LOC}

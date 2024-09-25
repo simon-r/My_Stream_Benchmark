@@ -315,6 +315,14 @@ int main(int argc, char **argv) {
     printf("Start My Stream [MPI]\n");
     printf(HLINE);
     printf("\n");
+
+#ifdef COMPILER
+    printf("Compiler: %s\n\n", COMPILER);
+#endif
+
+#ifdef ARCHITECTURE
+    printf("Architecture: %s\n\n", ARCHITECTURE);
+#endif
   }
 
   size_t vec_size = DEFAULT_TEST_SIZE;
@@ -505,12 +513,12 @@ int main(int argc, char **argv) {
     printf(HLINE);
     printf("Test            Total bandwidth        clock  \n");
     printf(HLINE);
-    printf("FMA:            %8.3f GB/s,          %5.3f ms\n", FMA_total_bandwidth,
-           clock_FMA);
-    printf("copy:           %8.3f GB/s,          %5.3f ms\n", copy_total_bandwidth,
-           clock_copy);
-    printf("axpy (TRIAD):   %8.3f GB/s,          %5.3f ms\n", axpy_total_bandwidth,
-           clock_axpy);
+    printf("FMA:            %8.3f GB/s,          %5.3f ms\n",
+           FMA_total_bandwidth, clock_FMA);
+    printf("copy:           %8.3f GB/s,          %5.3f ms\n",
+           copy_total_bandwidth, clock_copy);
+    printf("axpy (TRIAD):   %8.3f GB/s,          %5.3f ms\n",
+           axpy_total_bandwidth, clock_axpy);
     printf("add mul:        %8.3f GB/s,          %5.3f ms\n",
            add_mul_total_bandwidth, clock_add_mul);
 

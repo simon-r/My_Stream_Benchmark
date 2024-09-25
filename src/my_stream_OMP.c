@@ -48,317 +48,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 typedef double float_type;
 
-struct streams_args {
-  size_t vec_size;
-
-  float_type *a;
-  float_type *b;
-  float_type *c;
-  float_type *d;
-
-  double clock;
-  double bandwidth;
-
-  double consume_out;
-  size_t benchmark_repetitions;
-  size_t nr_cpu;
-};
-
 void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
   return (void *)aligned_alloc(__alignment, vector_len * type_size);
+  //  return (void *)omp_aligned_alloc(__alignment, vector_len * type_size,
+  //                                   omp_get_default_allocator());
 }
 
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-void fma_omp(struct streams_args *args) {
-
-  const unsigned int vec_size = args->vec_size;
-
-#if GLOBAL_ALLOC == 1
-  float_type *a = args->a;
-  float_type *b = args->b;
-  float_type *c = args->c;
-  float_type *d = args->d;
-#elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *b = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-
-  unsigned int r = 1;
-  for (int i = 0; i < vec_size; i++) {
-    r = generate_random_number(r);
-    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
-    b[i] = 1.0 + (float_type)(r % 400) / 300.0;
-    c[i] = 1.0 + (float_type)(r % 500) / 300.0;
-    d[i] = 0.0;
-  }
-#endif
-
-  float_type consume_out = 0.0;
-  double elapsed = 0.0;
-
-  struct timespec start, end;
-
-  for (int r = 0; r < args->benchmark_repetitions; r++) {
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-
-#pragma omp parallel for
-    for (size_t i = 0; i < vec_size; i++) {
-      d[i] = a[i] * b[i] + c[i];
-    }
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed += get_time(start, end);
-
-    consume_out += a[rand() % vec_size] + b[rand() % vec_size] +
-                   c[rand() % vec_size] + d[rand() % vec_size];
-    // printf("n %f ", consume_out);
-  }
-
-  args->consume_out = consume_out;
-  args->clock = elapsed / (double)args->benchmark_repetitions;
-
-  args->bandwidth = compute_bandwidth(1.0, 4.0, args->vec_size, args->clock,
-                                      sizeof(float_type));
-
-#if GLOBAL_ALLOC == 0
-  free(a);
-  free(b);
-  free(c);
-  free(d);
-#endif
+void stream_free(void *ptr) {
+  free(ptr);
+  // omp_free(ptr, omp_get_default_allocator());
 }
 
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-void axpy_omp(struct streams_args *args) {
-
-  const unsigned int vec_size = args->vec_size;
-
-  float_type alpha = 2.56;
-
-#if GLOBAL_ALLOC == 1
-  float_type *a = args->a;
-  float_type *c = args->c;
-  float_type *d = args->d;
-#elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  // float_type *b = (float_type *)stream_calloc(1024, vec_size,
-  // sizeof(float_type));
-  float_type *c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-
-  unsigned int r = 1;
-  for (int i = 0; i < vec_size; i++) {
-    r = generate_random_number(r);
-    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
-    c[i] = 1.0 + (float_type)(r % 500) / 300.0;
-    d[i] = 0.0;
-  }
-#endif
-
-  float_type consume_out = 0.0;
-  double elapsed = 0.0;
-
-  struct timespec start, end;
-
-  for (int r = 0; r < args->benchmark_repetitions; r++) {
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-#pragma omp parallel for
-    for (size_t i = 0; i < vec_size; i++) {
-      d[i] = alpha * a[i] + c[i];
-    }
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed += get_time(start, end);
-
-    consume_out +=
-        a[rand() % vec_size] + c[rand() % vec_size] + d[rand() % vec_size];
-    // printf("n %f ", consume_out);
-  }
-
-  args->consume_out = consume_out;
-  args->clock = elapsed / (double)args->benchmark_repetitions;
-
-  args->bandwidth = compute_bandwidth(1.0, 3.0, args->vec_size, args->clock,
-                                      sizeof(float_type));
-
-#if GLOBAL_ALLOC == 0
-  free(a);
-  // free(b);
-  free(c);
-  free(d);
-#endif
-}
-
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-void copy_omp(struct streams_args *args) {
-
-  const unsigned int vec_size = args->vec_size;
-
-#if GLOBAL_ALLOC == 1
-  float_type *a = args->a;
-  float_type *d = args->d;
-
-#elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-
-  unsigned int r = 1;
-  for (int i = 0; i < vec_size; i++) {
-    r = generate_random_number(r);
-    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
-    d[i] = 0.0;
-  }
-#endif
-
-  float_type consume_out = 0.0;
-  double elapsed = 0.0;
-
-  struct timespec start, end;
-
-  for (int r = 0; r < args->benchmark_repetitions; r++) {
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-#pragma omp parallel for
-    for (size_t i = 0; i < vec_size; i++) {
-      d[i] = a[i];
-    }
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed += get_time(start, end);
-
-    consume_out += a[rand() % vec_size] + d[rand() % vec_size];
-  }
-
-  args->consume_out = consume_out;
-  args->clock = elapsed / (double)args->benchmark_repetitions;
-
-  args->bandwidth = compute_bandwidth(1.0, 2.0, args->vec_size, args->clock,
-                                      sizeof(float_type));
-
-#if GLOBAL_ALLOC == 0
-  free(a);
-  free(d);
-#endif
-}
-
-//////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////
-void addmul_omp(struct streams_args *args) {
-
-  const unsigned int vec_size = args->vec_size;
-
-#if GLOBAL_ALLOC == 1
-  float_type *a = args->a;
-  float_type *b = args->b;
-  float_type *c = args->c;
-  float_type *d = args->d;
-#elif GLOBAL_ALLOC == 0
-  float_type *a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *b = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  float_type *d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-
-  unsigned int r = 1;
-  for (int i = 0; i < vec_size; i++) {
-    r = generate_random_number(r);
-    a[i] = 1.0 + (float_type)(r % 300) / 200.0;
-    b[i] = 1.0 + (float_type)(r % 400) / 300.0;
-    c[i] = 1.0 + (float_type)(r % 500) / 300.0;
-    d[i] = 0.0;
-  }
-#endif
-
-  float_type consume_out = 0.0;
-  double elapsed = 0.0;
-
-  struct timespec start, end;
-
-  for (int r = 0; r < args->benchmark_repetitions; r++) {
-
-    clock_gettime(CLOCK_MONOTONIC, &start);
-#pragma omp parallel for
-    for (size_t i = 0; i < vec_size; i++) {
-      d[i] = a[i] + b[i];
-      c[i] = a[i] * b[i];
-    }
-
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    elapsed += get_time(start, end);
-
-    consume_out += a[rand() % vec_size] + b[rand() % vec_size] +
-                   c[rand() % vec_size] + d[rand() % vec_size];
-    // printf("n %f ", consume_out);
-  }
-
-  args->consume_out = consume_out;
-  args->clock = elapsed / (double)args->benchmark_repetitions;
-
-  args->bandwidth = compute_bandwidth(1.0, 4.0, args->vec_size, args->clock,
-                                      sizeof(float_type));
-
-#if GLOBAL_ALLOC == 0
-  free(a);
-  free(b);
-  free(c);
-  free(d);
-#endif
-}
-
-/**
- * @brief
- *
- * @param argc
- * @param argv
- * @return int
- */
-int main(int argc, char **argv) {
-
-printf("\n");
-printf("-----------------------------------------------------------\n");
-
-#if GLOBAL_ALLOC == 1
-  printf("Start My Stream  [OpenMP] [Global Alloc]\n");
-#elif GLOBAL_ALLOC == 0
-  printf("Start My Stream  [OpenMP] [Local Alloc]\n");
-#else
-#error "GLOBAL_ALLOC must be 0 or 1"
-#endif
+int main(int argc, char *argv[]) {
 
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
+  const int nr_cpu = omp_get_num_procs();
+
+  printf("Start My Stream  [OpenMP]\n\n");
+
+#ifdef COMPILER
+  printf("Compiler: %s\n\n", COMPILER);
+#endif
+
+#ifdef ARCHITECTURE
+  printf("Architecture: %s\n\n", ARCHITECTURE);
+#endif
 
   if (flag_exists(argc, argv, "-h") | flag_exists(argc, argv, "--help")) {
-
-    printf("Usage: %s [options]\n", argv[0]);
-    printf("Options:\n");
-    printf("  -h, --help                  Show this help message and exit.\n");
-    printf("  -s SIZE                     Size of the vector.\n");
-    printf("  -r REPETITIONS              Number of repetitions of each "
-           "benchmark.\n");
-
-    printf("\n");
-    printf("Description:\n");
-    printf("  This program,  \"my_stream\" "
-           ", is designed to benchmark the memory bandwidth (in Mb/s and "
-           "Gb/s). \n"
-           "  In order to measure the bandwidth, it executes four "
-           "\"memory bound\" vector operations: Axpy, Copy, FMA (fused "
-           "multiply-add), and Add Mult..\n"
-           "  Visit: https://github.com/simon-r/My_Stream_Benchmark \n");
-
-    printf("\n");
+    print_help(argv);
     return 0;
   }
+
+  //   size_t test_size = DEFAULT_TEST_SIZE;
 
   char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
 
@@ -386,8 +108,6 @@ printf("-----------------------------------------------------------\n");
     }
   }
 
-  // get the number of cpu from open mp
-  const int nr_cpu = omp_get_num_procs();
   vec_size = vec_size / nr_cpu;
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * nr_cpu;
 
@@ -404,78 +124,144 @@ printf("-----------------------------------------------------------\n");
   printf("Repetitions:               %d\n", benchmark_repetitions);
   printf("-----------------------------------------------------------\n\n");
 
-  struct streams_args args;
+  double *clock_axpy = malloc(sizeof(float_type) * benchmark_repetitions);
+  double *clock_fma = malloc(sizeof(float_type) * benchmark_repetitions);
+  double *clock_copy = malloc(sizeof(float_type) * benchmark_repetitions);
+  double *clock_addmul = malloc(sizeof(float_type) * benchmark_repetitions);
 
-  args.vec_size = vec_size;
+  { /// Begin benckmark
+    float_type *a =
+        (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+    float_type *b =
+        (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+    float_type *c =
+        (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
+    float_type *d =
+        (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
 
-#if GLOBAL_ALLOC == 1
-  args.a = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  args.b = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  args.c = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-  args.d = (float_type *)stream_calloc(1024, vec_size, sizeof(float_type));
-#elif GLOBAL_ALLOC == 0
-  args.a = NULL;
-  args.b = NULL;
-  args.c = NULL;
-  args.d = NULL;
-#else
-#error "GLOBAL_ALLOC must be 0 or 1"
-#endif
+    double consume_out = 0.0;
+    const double alpha = 2.56;
 
-#if GLOBAL_ALLOC == 1
-  unsigned int r = 1;
-  for (int i = 0; i < vec_size; i++) {
-    r = generate_random_number(r);
-    args.a[i] = 1.0 + (float_type)(r % 300) / 200.0;
-    args.b[i] = 1.0 + (float_type)(r % 400) / 300.0;
-    args.c[i] = 1.0 + (float_type)(r % 500) / 300.0;
-    args.d[i] = 0.0;
+#pragma omp parallel for
+    for (int i = 0; i < vec_size; i++) {
+      a[i] = 1.0 + (float_type)(i % 300) / 200.0;
+      b[i] = 1.0 + (float_type)(i % 200) / 150.0;
+      c[i] = 1.0 + (float_type)(i % 150) / 100.0;
+      d[i] = 0.0;
+    }
+
+    struct timespec start, end;
+
+    //// FMA
+    for (int r = 0; r < benchmark_repetitions; r++) {
+
+      clock_gettime(CLOCK_MONOTONIC, &start);
+
+#pragma omp parallel for
+      for (size_t i = 0; i < vec_size; i++) {
+        d[i] = a[i] * b[i] + c[i];
+      }
+
+      clock_gettime(CLOCK_MONOTONIC, &end);
+
+      clock_fma[r] = get_time(start, end);
+
+      consume_out += a[rand() % vec_size] + b[rand() % vec_size] +
+                     c[rand() % vec_size] + d[rand() % vec_size];
+      // printf("n %f ", consume_out);
+    }
+
+    //// AXPY
+    for (int r = 0; r < benchmark_repetitions; r++) {
+
+      clock_gettime(CLOCK_MONOTONIC, &start);
+
+#pragma omp parallel for
+      for (size_t i = 0; i < vec_size; i++) {
+        d[i] = alpha * a[i] + b[i];
+      }
+
+      clock_gettime(CLOCK_MONOTONIC, &end);
+
+      clock_axpy[r] = get_time(start, end);
+
+      consume_out += d[rand() % vec_size];
+      // printf("n %f ", consume_out);
+    }
+
+    //// COPY
+    for (int r = 0; r < benchmark_repetitions; r++) {
+
+      clock_gettime(CLOCK_MONOTONIC, &start);
+
+#pragma omp parallel for
+      for (size_t i = 0; i < vec_size; i++) {
+        d[i] = a[i];
+      }
+
+      clock_gettime(CLOCK_MONOTONIC, &end);
+
+      clock_copy[r] = get_time(start, end);
+
+      consume_out += d[rand() % vec_size];
+      // printf("n %f ", consume_out);
+    }
+
+    //// ADDMUL
+    for (int r = 0; r < benchmark_repetitions; r++) {
+
+      clock_gettime(CLOCK_MONOTONIC, &start);
+
+#pragma omp parallel for
+      for (size_t i = 0; i < vec_size; i++) {
+        d[i] = a[i] + b[i];
+        c[i] = a[i] * b[i];
+      }
+
+      clock_gettime(CLOCK_MONOTONIC, &end);
+
+      clock_addmul[r] = get_time(start, end);
+
+      consume_out += c[rand() % vec_size] + d[rand() % vec_size];
+      // printf("n %f ", consume_out);
+    }
+
+    //    omp_free(a, omp_get_default_allocator());
+    //    omp_free(b, omp_get_default_allocator());
+    //    omp_free(c, omp_get_default_allocator());
+    //    omp_free(d, omp_get_default_allocator());
+    //
+    stream_free(a);
+    stream_free(b);
+    stream_free(c);
+    stream_free(d);
   }
-#endif
 
-  args.consume_out = 22.2;
-  args.benchmark_repetitions = benchmark_repetitions;
+  double avg_clock_axpy = average(clock_axpy, benchmark_repetitions);
+  double avg_clock_fma = average(clock_fma, benchmark_repetitions);
+  double avg_clock_copy = average(clock_copy, benchmark_repetitions);
+  double avg_clock_addmul = average(clock_addmul, benchmark_repetitions);
 
-  fma_omp(&args);
+  double bandwidth_axpy = compute_bandwidth(1, 3, vec_size, //
+                                            avg_clock_axpy, sizeof(float_type));
+  double bandwidth_fma = compute_bandwidth(1, 3, vec_size, //
+                                           avg_clock_fma, sizeof(float_type));
+  double bandwidth_copy = compute_bandwidth(1, 2, vec_size, //
+                                            avg_clock_copy, sizeof(float_type));
+  double bandwidth_addmul =
+      compute_bandwidth(1, 4,                                  //
+                        vec_size,                              //
+                        avg_clock_addmul, sizeof(float_type)); //
 
-  printf("-----------------------------------------------------------\n");
-  printf("FMA:                       %f [Gb/s]\n", args.bandwidth / to_Gb);
-  printf("Clock:                     %f [ms]\n", args.clock);
-  printf("Consume:  %lf\n", args.consume_out);
-
-  args.consume_out = 22.2;
-  args.benchmark_repetitions = benchmark_repetitions;
-
-  axpy_omp(&args);
-
-  printf("-----------------------------------------------------------\n");
-  printf("AXPY:                      %f [Gb/s]\n", args.bandwidth / to_Gb);
-  printf("Clock:                     %f [ms]\n", args.clock);
-  printf("Consume:  %lf\n", args.consume_out);
-
-  args.consume_out = 22.2;
-  args.benchmark_repetitions = benchmark_repetitions;
-  copy_omp(&args);
-
-  printf("-----------------------------------------------------------\n");
-  printf("Copy:                      %f [Gb/s]\n", args.bandwidth / to_Gb);
-  printf("Clock:                     %f [ms]\n", args.clock);
-  printf("Consume:  %lf\n", args.consume_out);
-
-  args.consume_out = 22.2;
-  args.benchmark_repetitions = benchmark_repetitions;
-  addmul_omp(&args);
-
-  printf("-----------------------------------------------------------\n");
-  printf("Add Mul:                   %f [Gb/s]\n", args.bandwidth / to_Gb);
-  printf("Clock:                     %f [ms]\n", args.clock);
-  printf("Consume:  %lf\n", args.consume_out);
-  printf("-----------------------------------------------------------\n");
-
-  free(args.a);
-  free(args.b);
-  free(args.c);
-  free(args.d);
+  printf("\n-----------------------------------------------------------\n");
+  printf("RESULTS OpenMP\n");
+  print_performance_metrics(bandwidth_axpy, avg_clock_axpy, bandwidth_fma,
+                            avg_clock_fma, bandwidth_copy, avg_clock_copy,
+                            bandwidth_addmul, avg_clock_addmul, to_Gb);
+  free(clock_axpy);
+  free(clock_fma);
+  free(clock_copy);
+  free(clock_addmul);
 
   return 0;
 }

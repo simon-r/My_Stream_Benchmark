@@ -309,6 +309,14 @@ int main(int argc, char **argv) {
   printf("Start My Stream [Multi Threads - Global "
          "Memory]\n------------------------\n\n");
 
+#ifdef COMPILER
+  printf("Compiler: %s\n\n", COMPILER);
+#endif
+
+#ifdef ARCHITECTURE
+  printf("Architecture: %s\n\n", ARCHITECTURE);
+#endif
+
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
 
