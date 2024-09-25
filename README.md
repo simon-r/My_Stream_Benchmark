@@ -65,7 +65,7 @@ My stream consists of three application which perform the memory bandwidth bench
       ./my_stream_OMP.exe -s {vec_size}
       ./my_stream_mt_gm.exe -s {vec_size}
       ./my_stream_mt_lm.exe -s {vec_size}
-      mpirun ./my_stream_MPI.exe -s {vec_size}
+      mpirun -n #NR_CPU ./my_stream_MPI.exe -s {vec_size}
 
 For a reliable measurement, make sure that the total allocated memory is approximately half of the total available DRAM.
 
@@ -91,8 +91,8 @@ Reports average execution times, bandwidth and memory used for
 Axpy, Copy, and FMA operations.
 
 ### Tested compilers
-* GCC 7.5.0, 13.2.1
-* CLANG 16.0.6
+* GCC 7.5.0, 13.2.1 14.2.1
+* CLANG 16.0.6 18.1.8
 * icx 2023.2.0, 2023.0.0
 
 The support of c99 is required.
