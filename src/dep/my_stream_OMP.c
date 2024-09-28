@@ -349,8 +349,8 @@ printf("-----------------------------------------------------------\n");
     printf("\n");
     printf("Description:\n");
     printf("  This program,  \"my_stream\" "
-           ", is designed to benchmark the memory bandwidth (in Mb/s and "
-           "Gb/s). \n"
+           ", is designed to benchmark the memory bandwidth (in MB/s and "
+           "GB/s). \n"
            "  In order to measure the bandwidth, it executes four "
            "\"memory bound\" vector operations: Axpy, Copy, FMA (fused "
            "multiply-add), and Add Mult..\n"
@@ -392,15 +392,15 @@ printf("-----------------------------------------------------------\n");
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * nr_cpu;
 
   double bytes_vec_size = (double)(vec_size * sizeof(float_type));
-  double Mb_vec_size = bytes_vec_size / to_Mb;
-  double Gb_vec_size = bytes_vec_size / to_Gb;
+  double MB_vec_size = bytes_vec_size / to_MB;
+  double GB_vec_size = bytes_vec_size / to_GB;
 
   printf("\n-----------------------------------------------------------\n");
   printf("Number of CPU:             %d\n", nr_cpu);
   printf("Adjusted vector size:      %lu\n", vec_size);
-  printf("Mb Vector size:            %f [Mb]\n", Mb_vec_size);
-  printf("Gb Vector size:            %f [Gb]\n", Gb_vec_size);
-  printf("Gb Total allocated memory: %f [Gb]\n", Gb_vec_size * 4);
+  printf("MB Vector size:            %f [MB]\n", MB_vec_size);
+  printf("GB Vector size:            %f [GB]\n", GB_vec_size);
+  printf("GB Total allocated memory: %f [GB]\n", GB_vec_size * 4);
   printf("Repetitions:               %d\n", benchmark_repetitions);
   printf("-----------------------------------------------------------\n\n");
 
@@ -439,7 +439,7 @@ printf("-----------------------------------------------------------\n");
   fma_omp(&args);
 
   printf("-----------------------------------------------------------\n");
-  printf("FMA:                       %f [Gb/s]\n", args.bandwidth / to_Gb);
+  printf("FMA:                       %f [GB/s]\n", args.bandwidth / to_GB);
   printf("Clock:                     %f [ms]\n", args.clock);
   printf("Consume:  %lf\n", args.consume_out);
 
@@ -449,7 +449,7 @@ printf("-----------------------------------------------------------\n");
   axpy_omp(&args);
 
   printf("-----------------------------------------------------------\n");
-  printf("AXPY:                      %f [Gb/s]\n", args.bandwidth / to_Gb);
+  printf("AXPY:                      %f [GB/s]\n", args.bandwidth / to_GB);
   printf("Clock:                     %f [ms]\n", args.clock);
   printf("Consume:  %lf\n", args.consume_out);
 
@@ -458,7 +458,7 @@ printf("-----------------------------------------------------------\n");
   copy_omp(&args);
 
   printf("-----------------------------------------------------------\n");
-  printf("Copy:                      %f [Gb/s]\n", args.bandwidth / to_Gb);
+  printf("Copy:                      %f [GB/s]\n", args.bandwidth / to_GB);
   printf("Clock:                     %f [ms]\n", args.clock);
   printf("Consume:  %lf\n", args.consume_out);
 
@@ -467,7 +467,7 @@ printf("-----------------------------------------------------------\n");
   addmul_omp(&args);
 
   printf("-----------------------------------------------------------\n");
-  printf("Add Mul:                   %f [Gb/s]\n", args.bandwidth / to_Gb);
+  printf("Add Mul:                   %f [GB/s]\n", args.bandwidth / to_GB);
   printf("Clock:                     %f [ms]\n", args.clock);
   printf("Consume:  %lf\n", args.consume_out);
   printf("-----------------------------------------------------------\n");

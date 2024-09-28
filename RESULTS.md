@@ -19,9 +19,9 @@ Compiler gcc 13.2
     ------------------------------------------------------------------
     Number of MPI processes:               36
     Adjusted vector size:                  500000256
-    Mb Vector size per process:            105.963867
-    Gb Vector size per process:            0.103480
-    Gb Total allocated memory:             14.901169
+    MB Vector size per process:            105.963867
+    GB Vector size per process:            0.103480
+    GB Total allocated memory:             14.901169
     Repetitions:                           50
     ------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ Compiler gcc 13.2
 
 #### Multi Threads - Global Memory
 
-    Benchmark:             Mb/s                     Gb/s          Memory Streamed [Mb]
+    Benchmark:             MB/s                     GB/s          Memory Streamed [MB]
     -----------------------------------------------------------------------------------------------
 
     Axpy:                  44830.63                 43.78         572204.882812
@@ -50,19 +50,19 @@ Compiler gcc 13.2
 #### OpenMP
 
     -----------------------------------------------------------
-    FMA:                       62.593331 [Gb/s]
+    FMA:                       62.593331 [GB/s]
     Clock:                     238.063204 [ms]
     Consume:  510.388650
     -----------------------------------------------------------
-    AXPY:                      81.027703 [Gb/s]
+    AXPY:                      81.027703 [GB/s]
     Clock:                     137.926614 [ms]
     Consume:  568.710133
     -----------------------------------------------------------
-    Copy:                      68.277651 [Gb/s]
+    Copy:                      68.277651 [GB/s]
     Clock:                     109.121861 [ms]
     Consume:  179.885000
     -----------------------------------------------------------
-    Add Mul:                   69.198126 [Gb/s]
+    Add Mul:                   69.198126 [GB/s]
     Clock:                     215.340641 [ms]
     Consume:  504.003517
     -----------------------------------------------------------
@@ -90,9 +90,9 @@ Compiler gcc 13.2
     ------------------------------------------------------------------
     Number of MPI processes:               112
     Adjusted vector size:                  1000000512
-    Mb Vector size per process:            68.119629
-    Gb Vector size per process:            0.066523
-    Gb Total allocated memory:             29.802338
+    MB Vector size per process:            68.119629
+    GB Vector size per process:            0.066523
+    GB Total allocated memory:             29.802338
     Repetitions:                           50
     ------------------------------------------------------------------
     ------------------------------------------------------------------
@@ -116,9 +116,9 @@ Compiler gcc 13.2
     ------------------------------------------------------------------
     Number of MPI processes:               288
     Adjusted vector size:                  3000001536
-    Mb Vector size per process:            79.472900
-    Gb Vector size per process:            0.077610
-    Gb Total allocated memory:             89.407013
+    MB Vector size per process:            79.472900
+    GB Vector size per process:            0.077610
+    GB Total allocated memory:             89.407013
     Repetitions:                           50
     ------------------------------------------------------------------
     
@@ -145,9 +145,9 @@ Compiler gcc 13.2
     ------------------------------------------------------------------
     Number of MPI processes:               128
     Adjusted vector size:                  1000000512
-    Mb Vector size per process:            59.604675
-    Gb Vector size per process:            0.058208
-    Gb Total allocated memory:             29.802338
+    MB Vector size per process:            59.604675
+    GB Vector size per process:            0.058208
+    GB Total allocated memory:             29.802338
     Repetitions:                           50
     ------------------------------------------------------------------
     

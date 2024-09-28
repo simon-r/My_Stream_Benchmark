@@ -184,8 +184,8 @@ void print_help(char *argv[]) {
   printf("\n");
   printf("Description:\n");
   printf("  This program,  \"my_stream\" "
-         ", is designed to benchmark the memory bandwidth (in Mb/s and "
-         "Gb/s). \n"
+         ", is designed to benchmark the memory bandwidth (in MB/s and "
+         "GB/s). \n"
          "  In order to measure the bandwidth, it executes four "
          "\"memory bound\" vector operations: Axpy, Copy, FMA (fused "
          "multiply-add), and Add Mult..\n"
@@ -198,17 +198,17 @@ void print_performance_metrics(double bandwidth_axpy, double avg_clock_axpy,
                                double bandwidth_fma, double avg_clock_fma,
                                double bandwidth_copy, double avg_clock_copy,
                                double bandwidth_addmul, double avg_clock_addmul,
-                               double to_Gb) {
+                               double to_GB) {
   printf("\n-----------------------------------------------------------\n");
-  printf("Test          Bandwidth [Gb/s]            Avg. Clock [ms]\n");
+  printf("Test          Bandwidth [GB/s]            Avg. Clock [ms]\n");
   printf("-----------------------------------------------------------\n");
-  printf("AXPY:         %10.3f [Gb/s]         %10.3f [ms]\n",
-         bandwidth_axpy / to_Gb, avg_clock_axpy);
-  printf("FMA:          %10.3f [Gb/s]         %10.3f [ms]\n",
-         bandwidth_fma / to_Gb, avg_clock_fma);
-  printf("COPY:         %10.3f [Gb/s]         %10.3f [ms]\n",
-         bandwidth_copy / to_Gb, avg_clock_copy);
-  printf("ADDMUL:       %10.3f [Gb/s]         %10.3f [ms]\n",
-         bandwidth_addmul / to_Gb, avg_clock_addmul);
+  printf("AXPY:         %10.3f [GB/s]         %10.3f [ms]\n",
+         bandwidth_axpy / to_GB, avg_clock_axpy);
+  printf("FMA:          %10.3f [GB/s]         %10.3f [ms]\n",
+         bandwidth_fma / to_GB, avg_clock_fma);
+  printf("COPY:         %10.3f [GB/s]         %10.3f [ms]\n",
+         bandwidth_copy / to_GB, avg_clock_copy);
+  printf("ADDMUL:       %10.3f [GB/s]         %10.3f [ms]\n",
+         bandwidth_addmul / to_GB, avg_clock_addmul);
   printf("-----------------------------------------------------------\n\n");
 }

@@ -341,8 +341,8 @@ int main(int argc, char **argv) {
       printf("\n");
       printf("Description:\n");
       printf("  This program,  \"my_stream\" "
-             ", is designed to benchmark the memory bandwidth (in Mb/s and "
-             "Gb/s). \n"
+             ", is designed to benchmark the memory bandwidth (in MB/s and "
+             "GB/s). \n"
              "  In order to measure the bandwidth, it executes four "
              "\"memory bound\" vector operations: Axpy, Copy, FMA (fused "
              "multiply-add), and Add Mult..\n"
@@ -399,22 +399,22 @@ int main(int argc, char **argv) {
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * world_size;
   size_t vec_size_proc = vec_size / world_size;
 
-  // double to_Mb = (1024.0 * 1024.0);
-  // double to_Gb = (1024.0 * 1024.0 * 1024.0);
+  // double to_MB = (1024.0 * 1024.0);
+  // double to_GB = (1024.0 * 1024.0 * 1024.0);
 
   double bytes_vec_size = (double)(vec_size_proc * sizeof(float_type));
-  double Mb_vec_size = bytes_vec_size / to_Mb;
-  double Gb_vec_size = bytes_vec_size / to_Gb;
+  double MB_vec_size = bytes_vec_size / to_MB;
+  double GB_vec_size = bytes_vec_size / to_GB;
 
   if (rank == 0) {
     printf("\n");
     printf(HLINE);
     printf("Number of MPI processes:               %d\n", world_size);
     printf("Adjusted vector size:                  %lu elements\n", vec_size);
-    printf("MB Vector size per process:            %f MB\n", Mb_vec_size);
-    printf("GB Vector size per process:            %f GB\n", Gb_vec_size);
+    printf("MB Vector size per process:            %f MB\n", MB_vec_size);
+    printf("GB Vector size per process:            %f GB\n", GB_vec_size);
     printf("GB Total allocated memory:             %f GB\n",
-           (Gb_vec_size * 4 * world_size));
+           (GB_vec_size * 4 * world_size));
     printf("Repetitions:                           %d\n",
            benchmark_repetitions);
     printf(HLINE);
@@ -485,16 +485,16 @@ int main(int argc, char **argv) {
   if (rank == 0) {
 
     for (int i = 0; i < world_size; i++) {
-      FMA_total_bandwidth += (args[i].FMA.bandwidth / to_Gb);
+      FMA_total_bandwidth += (args[i].FMA.bandwidth / to_GB);
       clock_FMA += args[i].FMA.clock;
 
-      copy_total_bandwidth += (args[i].copy.bandwidth / to_Gb);
+      copy_total_bandwidth += (args[i].copy.bandwidth / to_GB);
       clock_copy += args[i].copy.clock;
 
-      axpy_total_bandwidth += (args[i].axpy.bandwidth / to_Gb);
+      axpy_total_bandwidth += (args[i].axpy.bandwidth / to_GB);
       clock_axpy += args[i].axpy.clock;
 
-      add_mul_total_bandwidth += (args[i].add_mul.bandwidth / to_Gb);
+      add_mul_total_bandwidth += (args[i].add_mul.bandwidth / to_GB);
       clock_add_mul += args[i].add_mul.clock;
     }
 

@@ -1,8 +1,8 @@
 #ifndef __MY_STREAM_UTILS__
 #define __MY_STREAM_UTILS__
 
-const double to_Mb = (1024.0 * 1024.0);
-const double to_Gb = (1024.0 * 1024.0 * 1024.0);
+const double to_MB = (1024.0 * 1024.0);
+const double to_GB = (1024.0 * 1024.0 * 1024.0);
 
 char *find_command_line_arg_value(int argc, char *argv[], const char *arg);
 
@@ -39,6 +39,6 @@ void print_performance_metrics(double bandwidth_axpy, double avg_clock_axpy,
                                double bandwidth_fma, double avg_clock_fma,
                                double bandwidth_copy, double avg_clock_copy,
                                double bandwidth_addmul, double avg_clock_addmul,
-                               double to_Gb);
+                               double to_GB);
 
 #endif // __MY_STREAM_UTILS__

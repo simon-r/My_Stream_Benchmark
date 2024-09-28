@@ -112,15 +112,15 @@ int main(int argc, char *argv[]) {
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * nr_cpu;
 
   double bytes_vec_size = (double)(vec_size * sizeof(float_type));
-  double Mb_vec_size = bytes_vec_size / to_Mb;
-  double Gb_vec_size = bytes_vec_size / to_Gb;
+  double MB_vec_size = bytes_vec_size / to_MB;
+  double GB_vec_size = bytes_vec_size / to_GB;
 
   printf("\n-----------------------------------------------------------\n");
   printf("Number of CPU:             %d\n", nr_cpu);
   printf("Adjusted vector size:      %lu\n", vec_size);
-  printf("Mb Vector size:            %f [Mb]\n", Mb_vec_size);
-  printf("Gb Vector size:            %f [Gb]\n", Gb_vec_size);
-  printf("Gb Total allocated memory: %f [Gb]\n", Gb_vec_size * 4);
+  printf("MB Vector size:            %f [MB]\n", MB_vec_size);
+  printf("GB Vector size:            %f [GB]\n", GB_vec_size);
+  printf("GB Total allocated memory: %f [GB]\n", GB_vec_size * 4);
   printf("Repetitions:               %d\n", benchmark_repetitions);
   printf("-----------------------------------------------------------\n\n");
 
@@ -257,7 +257,7 @@ int main(int argc, char *argv[]) {
   printf("RESULTS OpenMP\n");
   print_performance_metrics(bandwidth_axpy, avg_clock_axpy, bandwidth_fma,
                             avg_clock_fma, bandwidth_copy, avg_clock_copy,
-                            bandwidth_addmul, avg_clock_addmul, to_Gb);
+                            bandwidth_addmul, avg_clock_addmul, to_GB);
   free(clock_axpy);
   free(clock_fma);
   free(clock_copy);
