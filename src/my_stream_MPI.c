@@ -365,12 +365,6 @@ int main(int argc, char **argv) {
       if (rank == 0)
         printf("User defined vector size: %lu\n", vec_size);
 
-      if (rank == 0) {
-#ifdef COMPILER
-        printf("Compiler: %s\n\n", COMPILER);
-#endif
-      }
-
     } else {
 
       if (rank == 0)
