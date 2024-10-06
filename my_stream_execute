@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+
+import sys 
+import subprocess
+
+def get_physical_cpus():
+    try:
+        with open('/proc/cpuinfo') as f:
+            return int([line for line in f if line.startswith('cpu cores')][0].split(':')[1].strip())
+    except:
+        return 1
+
+def get_logical_cpus():
+    try:
+        with open('/proc/cpuinfo') as f:
+            return int([line for line in f if line.startswith('siblings')][0].split(':')[1].strip())
+    except:
+        return 1
+    
+def get_total_ram():
+    try:
+        with open('/proc/meminfo') as f:
+            return int([line for line in f if line.startswith('MemTotal')][0].split(':')[1].strip().split()[0])
+    except:
+        return 1
+    
+
+import subprocess
+import sys
+
+def run_command(cmd):
+    """
+    Run a shell command and print its output in real-time.
+
+    Args:
+        cmd (str): The command to run.
+    """
+    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.wait()
+    
+    # Print the output
+    while True:
+        output = process.stdout.readline()
+        if output == b'' and process.poll() is not None:
+            break
+        if output:
+            print(output.strip().decode())
+            
+    sys.stdout.flush()
+    sys.stderr.flush()
+    
+
+def KB2Bytes(value):
+    return value * 1024
+
+def KB2GB(value):
+    return value / 1024 / 1024
+    
+if __name__ == '__main__':
+    print()
+    print('Physical CPUs: ', get_physical_cpus())
+    print('Logical CPUs:  ', get_logical_cpus())
+    print('Total RAM:     ', round(KB2GB(get_total_ram()), 2), 'GB')
+    
+    print()
+    print('Executing the STREAM benchmark')
+    print('--------------------------------')
+    print()
+    
+    total_ram_Byte = KB2Bytes(get_total_ram())
+    
+    vector_size = int(total_ram_Byte / 8 / 14)
+    print('Vector size:   ', vector_size)
+    
+    size_arg = "-s " + str(vector_size) + " "
+    repeat_arg = "-r 25 "
+    
+    # Execute the stream benchmark
+    cmd =  "mpirun -n " + str(get_physical_cpus()) + " " + "./my_stream_MPI.bin " + size_arg + repeat_arg
+    print('Executing: ', cmd)
+    
+    run_command(cmd)
+    
+    cmd = "./my_stream_OMP.bin " + size_arg + repeat_arg
+    
+    print('Executing: ', cmd)
+    run_command(cmd)
+    
+    
+    cmd = "./my_stream_mt_lm.bin " + size_arg + repeat_arg
+    
+    print('Executing: ', cmd)
+    run_command(cmd)
+    
+    cmd = "./my_stream_mt_gm.bin " + size_arg + repeat_arg
+    print('Executing: ', cmd)
+    run_command(cmd)
+    
+    sys.exit(0)
