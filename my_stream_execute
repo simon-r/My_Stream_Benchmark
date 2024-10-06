@@ -2,6 +2,7 @@
 
 import sys 
 import subprocess
+import os
 
 def get_physical_cpus():
     try:
@@ -23,6 +24,19 @@ def get_total_ram():
             return int([line for line in f if line.startswith('MemTotal')][0].split(':')[1].strip().split()[0])
     except:
         return 1
+    
+def get_cpu_model():
+    try:
+        with open('/proc/cpuinfo') as f:
+            return [line for line in f if line.startswith('model name')][0].split(':')[1].strip()
+    except:
+        return 'Unknown'
+    
+def is_in_PATH(program):
+    for path in os.environ["PATH"].split(os.pathsep):
+        if os.path.exists(os.path.join(path, program)):
+            return True
+    return False
     
 
 import subprocess
@@ -58,6 +72,10 @@ def KB2GB(value):
     
 if __name__ == '__main__':
     print()
+    print('System Information')
+    print('------------------')
+    print()
+    print('CPU Model:     ', get_cpu_model())
     print('Physical CPUs: ', get_physical_cpus())
     print('Logical CPUs:  ', get_logical_cpus())
     print('Total RAM:     ', round(KB2GB(get_total_ram()), 2), 'GB')
@@ -74,25 +92,47 @@ if __name__ == '__main__':
     
     size_arg = "-s " + str(vector_size) + " "
     repeat_arg = "-r 25 "
-    
+        
     # Execute the stream benchmark
-    cmd =  "mpirun -n " + str(get_physical_cpus()) + " " + "./my_stream_MPI.bin " + size_arg + repeat_arg
+    if is_in_PATH('my_stream_MPI.bin'):
+        command = "my_stream_MPI.bin "
+    else:
+        command = "./my_stream_MPI.bin "
+        
+    
+    cmd =  "mpirun -n " + str(get_physical_cpus()) + " " + command + size_arg + repeat_arg
     print('Executing: ', cmd)
     
     run_command(cmd)
     
-    cmd = "./my_stream_OMP.bin " + size_arg + repeat_arg
+    if is_in_PATH('my_stream_OMP.bin'):
+        command = "my_stream_OMP.bin "
+    else:
+        command = "./my_stream_OMP.bin "
+    
+    cmd = command + size_arg + repeat_arg
     
     print('Executing: ', cmd)
     run_command(cmd)
     
     
-    cmd = "./my_stream_mt_lm.bin " + size_arg + repeat_arg
+    if is_in_PATH('my_stream_mt_lm.bin'):
+        command = "my_stream_mt_lm.bin "
+    else:
+        command = "./my_stream_mt_lm.bin "
+    
+    cmd = command + size_arg + repeat_arg
     
     print('Executing: ', cmd)
     run_command(cmd)
     
-    cmd = "./my_stream_mt_gm.bin " + size_arg + repeat_arg
+    if is_in_PATH('my_stream_mt_gm.bin'):
+        command = "my_stream_mt_gm.bin "
+    else:
+        command = "./my_stream_mt_gm.bin "
+    
+    cmd = command + size_arg + repeat_arg
+    
     print('Executing: ', cmd)
     run_command(cmd)
     
