@@ -46,17 +46,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define GLOBAL_ALLOC __GLOBAL_ALLOC__
 
+// #define OPENMP_VERSION 201810
+
 typedef double float_type;
 
 void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
+
+#if OPENMP_VERSION < 201811
+
+#pragma message "Using alligned_alloc from C11"
+
   return (void *)aligned_alloc(__alignment, vector_len * type_size);
-  //  return (void *)omp_aligned_alloc(__alignment, vector_len * type_size,
-  //                                   omp_get_default_allocator());
+#else
+#pragma message "Using omp_aligned_alloc from OpenMP 5.0"
+
+  return (void *)omp_aligned_alloc(__alignment, vector_len * type_size,
+                                   omp_get_default_allocator());
+#endif
 }
 
 void stream_free(void *ptr) {
+
+#if OPENMP_VERSION < 201811
   free(ptr);
-  // omp_free(ptr, omp_get_default_allocator());
+#else
+  omp_free(ptr, omp_get_default_allocator());
+#endif
 }
 
 int main(int argc, char *argv[]) {

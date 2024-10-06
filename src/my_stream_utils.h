@@ -33,7 +33,7 @@ double variance(const double *v, unsigned int n);
 
 double std_dev(const double *v, unsigned int n);
 
-void print_help();
+void print_help(char *argv[]);
 
 void print_performance_metrics(double bandwidth_axpy, double avg_clock_axpy,
                                double bandwidth_fma, double avg_clock_fma,
