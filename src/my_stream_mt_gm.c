@@ -304,7 +304,7 @@ void *stream_calloc(size_t __alignment, size_t vector_len, size_t type_size) {
  * @param argv
  * @return int
  */
-int main(int argc, char **argv) {
+int main(const int argc, const char **argv) {
 
   printf("Start My Stream [Multi Threads - Global "
          "Memory]\n------------------------\n\n");
@@ -343,7 +343,7 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
+  const char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
 
   if (vec_size_arg != NULL) {
 
@@ -356,7 +356,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  char *benchmark_repetitions_arg =
+  const char *benchmark_repetitions_arg =
       find_command_line_arg_value(argc, argv, "-r");
 
   if (benchmark_repetitions_arg != NULL) {
@@ -374,8 +374,8 @@ int main(int argc, char **argv) {
   vec_size = vec_size / nr_cpu;
   vec_size = ((vec_size - vec_size % VECTOR_LEN) + VECTOR_LEN) * nr_cpu;
 
-  double to_MB = (1024.0 * 1024.0);
-  double to_GB = (1024.0 * 1024.0 * 1024.0);
+  // double to_MB = (1024.0 * 1024.0);
+  // double to_GB = (1024.0 * 1024.0 * 1024.0);
 
   double bytes_vec_size = (double)(vec_size * sizeof(float_type));
   double MB_vec_size = bytes_vec_size / to_MB;

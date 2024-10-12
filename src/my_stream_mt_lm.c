@@ -400,7 +400,7 @@ void *add_mult_thread(void *arg_void) {
  * @param argv
  * @return int
  */
-int main(int argc, char **argv) {
+int main(const int argc, const char **argv) {
 
   printf("Start My Stream [Multi Threads - Local "
          "Memory]\n------------------------\n\n");
@@ -439,7 +439,7 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
+  const char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
 
   if (vec_size_arg != NULL) {
 
@@ -452,7 +452,7 @@ int main(int argc, char **argv) {
     }
   }
 
-  char *benchmark_repetitions_arg =
+  const char *benchmark_repetitions_arg =
       find_command_line_arg_value(argc, argv, "-r");
 
   if (benchmark_repetitions_arg != NULL) {

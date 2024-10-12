@@ -74,7 +74,7 @@ void stream_free(void *ptr) {
 #endif
 }
 
-int main(int argc, char *argv[]) {
+int main(const int argc, const char *argv[]) {
 
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
 
   //   size_t test_size = DEFAULT_TEST_SIZE;
 
-  char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
+  const char *vec_size_arg = find_command_line_arg_value(argc, argv, "-s");
 
   if (vec_size_arg != NULL) {
 
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  char *benchmark_repetitions_arg =
+  const char *benchmark_repetitions_arg =
       find_command_line_arg_value(argc, argv, "-r");
 
   if (benchmark_repetitions_arg != NULL) {

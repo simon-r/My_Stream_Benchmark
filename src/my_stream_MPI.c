@@ -328,7 +328,7 @@ int main(int argc, char **argv) {
   size_t vec_size = DEFAULT_TEST_SIZE;
   int benchmark_repetitions = BENCHMARK_REPETITIONS;
 
-  if ((flag_exists(argc, argv, "-h") | flag_exists(argc, argv, "--help"))) {
+  if ((flag_exists(argc, (const char**)argv, "-h") | flag_exists(argc, (const char**)argv, "--help"))) {
     if (rank == 0) {
       printf("Usage: %s [options]\n", argv[0]);
       printf("Options:\n");

@@ -8,6 +8,8 @@
 #include <string.h>
 #include <time.h>
 
+#include "my_stream_utils.h"
+
 const char *find_command_line_arg_value(const int argc, const char *argv[],
                                         const char *arg) {
 
@@ -38,7 +40,7 @@ const int find_command_line_arg_value_v2(const int argc, const char *argv[],
   return -1; // Argument not found
 }
 
-int flag_exists(int argc, char *argv[], const char *flag) {
+int flag_exists(const int argc, const char *argv[], const char *flag) {
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], flag) == 0) {
       return 1; // Return 1 if the flag is found
@@ -47,7 +49,7 @@ int flag_exists(int argc, char *argv[], const char *flag) {
   return 0; // Return 0 if the flag is not found
 }
 
-int is_number(char *str) {
+int is_number(const char *str) {
   for (int i = 0; str[i] != '\0'; i++) {
     if (str[i] < '0' || str[i] > '9') {
       return 0;
@@ -173,7 +175,7 @@ double minimum(const double *v, unsigned int n) {
 /**
  * Prints the help message.
  */
-void print_help(char *argv[]) {
+void print_help(const char *argv[]) {
   printf("Usage: %s [options]\n", argv[0]);
   printf("Options:\n");
   printf("  -h, --help                  Show this help message and exit.\n");
@@ -211,4 +213,23 @@ void print_performance_metrics(double bandwidth_axpy, double avg_clock_axpy,
   printf("ADDMUL:       %10.3f [GB/s]         %10.3f [ms]\n",
          bandwidth_addmul / to_GB, avg_clock_addmul);
   printf("-----------------------------------------------------------\n\n");
+}
+
+
+char *make_results_csv(const struct results_data *results, const int n) {
+  char *csv = malloc(1000 * sizeof(char));
+  char *csv_ptr = csv;
+
+  csv_ptr += sprintf(csv_ptr, "Test, Avg. Time [ms], Bandwidth [GB/s], "
+                              "Std. Dev. [ms], Max [ms], Min [ms], "
+                              "Streamed Memory [MB]\n");
+
+  for (int i = 0; i < n; i++) {
+    csv_ptr += sprintf(csv_ptr, "%s, %lf, %lf, %lf, %lf, %lf, %lf\n",
+                       results[i].test_name, results[i].avg_time,
+                       results[i].bandwidth, results[i].std_dev,
+                       results[i].max, results[i].min, results[i].streamed_memory);
+  }
+
+  return csv;
 }
