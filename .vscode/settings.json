@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "iomanip": "c",
-        "pthread.h": "c"
-    }
-}
