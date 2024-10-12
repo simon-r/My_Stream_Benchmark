@@ -442,7 +442,7 @@ int main(int argc, char **argv) {
   double bandwidth_axpy = (3.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                           (average_axpy_time / 1000.0);
 
-  double bandwidth_axpy_MBS = bandwidth_axpy / to_MB;
+  // double bandwidth_axpy_MBS = bandwidth_axpy / to_MB;
   double bandwidth_axpy_GBS = bandwidth_axpy / to_GB;
 
 #ifdef VERBOSE
@@ -471,7 +471,7 @@ int main(int argc, char **argv) {
   double bandwidth_copy = (2.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                           (average_copy_time / 1000.0);
 
-  double bandwidth_copy_MBS = bandwidth_copy / to_MB;
+  // double bandwidth_copy_MBS = bandwidth_copy / to_MB;
   double bandwidth_copy_GBS = bandwidth_copy / to_GB;
 
 #ifdef VERBOSE
@@ -498,7 +498,7 @@ int main(int argc, char **argv) {
   double bandwidth_fma = (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
                          (average_fma_time / 1000.0);
 
-  double bandwidth_fma_MBS = bandwidth_fma / to_MB;
+  // double bandwidth_fma_MBS = bandwidth_fma / to_MB;
   double bandwidth_fma_GBS = bandwidth_fma / to_GB;
 
 #ifdef VERBOSE
@@ -526,7 +526,7 @@ int main(int argc, char **argv) {
       (4.0 * batch_vec_size * nr_cpu * sizeof(float_type)) /
       (average_add_mult_time / 1000.0);
 
-  double bandwidth_add_mult_MBS = bandwidth_add_mult / to_MB;
+  // double bandwidth_add_mult_MBS = bandwidth_add_mult / to_MB;
   double bandwidth_add_mult_GBS = bandwidth_add_mult / to_GB;
 
 #ifdef VERBOSE
@@ -546,26 +546,40 @@ int main(int argc, char **argv) {
 
   printf(SEP);
 
+  // printf("Results:\n");
+  // printf(SEP);
+  // printf("Benchmark:            GB/s                 Memory "
+  //        "Streamed [MB]\n");
+  // printf(SEP);
+  // printf("Axpy:       %15.2lf [GB/s]         %lf\n",   //
+  //        bandwidth_axpy_GBS, memory_streamed_axpy_MB); //
+
+  // printf("Copy:       %15.2lf [GB/s]         %lf\n",   //
+  //        bandwidth_copy_GBS, memory_streamed_copy_MB); //
+
+  // printf("FMA:        %15.2lf [GB/s]         %lf\n", //
+  //        bandwidth_fma_GBS, memory_streamed_fma_MB); //
+
+  // printf("Add Mult:   %15.2lf [GB/s]         %lf\n",           //
+  //        bandwidth_add_mult_GBS, memory_streamed_add_mult_MB); //
+
   printf("Results:\n");
   printf(SEP);
-  printf("Benchmark:             MB/s                     GB/s          Memory "
-         "Streamed [MB]\n");
+  printf("Benchmark:            GB/s                 Memory Streamed [MB]      "
+         "Avg. Clock [ms]\n");
   printf(SEP);
-  printf("Axpy:           %15.2lf       %15.2lf         %lf\n", //
-         bandwidth_axpy_MBS,                                    //
-         bandwidth_axpy_GBS, memory_streamed_axpy_MB);          //
+  printf("Axpy:       %15.2lf [GB/s]         %lf                 %lf\n",  //
+         bandwidth_axpy_GBS, memory_streamed_axpy_MB, average_axpy_time); //
 
-  printf("Copy:           %15.2lf       %15.2lf         %lf\n", //
-         bandwidth_copy_MBS,                                    //
-         bandwidth_copy_GBS, memory_streamed_copy_MB);          //
+  printf("Copy:       %15.2lf [GB/s]         %lf                 %lf\n",  //
+         bandwidth_copy_GBS, memory_streamed_copy_MB, average_copy_time); //
 
-  printf("FMA:            %15.2lf       %15.2lf         %lf\n", //
-         bandwidth_fma_MBS,                                     //
-         bandwidth_fma_GBS, memory_streamed_fma_MB);            //
+  printf("FMA:        %15.2lf [GB/s]         %lf                 %lf\n", //
+         bandwidth_fma_GBS, memory_streamed_fma_MB, average_fma_time);   //
 
-  printf("Add Mult:       %15.2lf       %15.2lf         %lf\n", //
-         bandwidth_add_mult_MBS,                                //
-         bandwidth_add_mult_GBS, memory_streamed_add_mult_MB);  //
+  printf("Add Mult:   %15.2lf [GB/s]         %lf                 %lf\n", //
+         bandwidth_add_mult_GBS, memory_streamed_add_mult_MB,
+         average_add_mult_time); //
 
   printf(SEP);
 
