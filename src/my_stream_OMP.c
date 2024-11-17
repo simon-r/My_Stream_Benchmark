@@ -27,6 +27,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
+#define _POSIX_C_SOURCE 199309L
+
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
