@@ -91,7 +91,7 @@ install:
 	@install -m 755 ${TARGET_mt_lm} ${INSTALL_DIR} --strip --verbose
 	@install -m 755 ${TARGET_OMP_V2} ${INSTALL_DIR} --strip --verbose
 	@install -m 755 ${TARGET_MPI} ${INSTALL_DIR} --strip --verbose
-	@install -m 755 my_stream_execute ${INSTALL_DIR} --strip --verbose
+	@install -m 755 my_stream_execute ${INSTALL_DIR} --verbose
 	@echo "Done"
 
 uninstall:
