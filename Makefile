@@ -91,6 +91,8 @@ install:
 	@install -m 755 ${TARGET_mt_lm} ${INSTALL_DIR} --strip --verbose
 	@install -m 755 ${TARGET_OMP_V2} ${INSTALL_DIR} --strip --verbose
 	@install -m 755 ${TARGET_MPI} ${INSTALL_DIR} --strip --verbose
+	@install -m 755 my_stream_execute ${INSTALL_DIR} --strip --verbose
+	@echo "Done"
 
 uninstall:
 	@echo "Uninstalling the executables from the bin directory"
@@ -98,6 +100,7 @@ uninstall:
 	@rm -f ${INSTALL_DIR}/${TARGET_mt_lm} -v
 	@rm -f ${INSTALL_DIR}/${TARGET_OMP_V2} -v
 	@rm -f ${INSTALL_DIR}/${TARGET_MPI} -v
+	@rm -f ${INSTALL_DIR}/my_stream_execute -v
 	
 ############################################################
 clean:
