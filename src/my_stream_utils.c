@@ -215,20 +215,58 @@ void print_performance_metrics(double bandwidth_axpy, double avg_clock_axpy,
   printf("-----------------------------------------------------------\n\n");
 }
 
-
 char *make_results_csv(const struct results_data *results, const int n) {
-  char *csv = malloc(1000 * sizeof(char));
+  // Initial buffer size with room for headers and data
+  size_t buffer_size = 1024;
+  char *csv = malloc(buffer_size);
+  if (!csv) {
+    return NULL;
+  }
   char *csv_ptr = csv;
+  size_t remaining = buffer_size;
+  int written;
 
-  csv_ptr += sprintf(csv_ptr, "Test, Avg. Time [ms], Bandwidth [GB/s], "
-                              "Std. Dev. [ms], Max [ms], Min [ms], "
-                              "Streamed Memory [MB]\n");
+  // Write header
+  written = snprintf(csv_ptr, remaining,
+                     "Test, Avg. Time [ms], Bandwidth [GB/s], Std. Dev. [ms], "
+                     "Max [ms], Min [ms], Streamed Memory [MB]\n");
 
+  if (written < 0 || written >= remaining) {
+    free(csv);
+    return NULL;
+  }
+
+  csv_ptr += written;
+  remaining -= written;
+
+  // Write data rows
   for (int i = 0; i < n; i++) {
-    csv_ptr += sprintf(csv_ptr, "%s, %lf, %lf, %lf, %lf, %lf, %lf\n",
+    written = snprintf(csv_ptr, remaining, "%s, %lf, %lf, %lf, %lf, %lf, %lf\n",
                        results[i].test_name, results[i].avg_time,
-                       results[i].bandwidth, results[i].std_dev,
-                       results[i].max, results[i].min, results[i].streamed_memory);
+                       results[i].bandwidth, results[i].std_dev, results[i].max,
+                       results[i].min, results[i].streamed_memory);
+
+    if (written < 0 || written >= remaining) {
+      // Buffer too small, reallocate with double size
+      size_t new_size = buffer_size * 2;
+      char *new_csv = realloc(csv, new_size);
+      if (!new_csv) {
+        free(csv);
+        return NULL;
+      }
+
+      csv = new_csv;
+      csv_ptr = csv + (buffer_size - remaining);
+      remaining = new_size - (buffer_size - remaining);
+      buffer_size = new_size;
+
+      // Retry writing this row
+      i--;
+      continue;
+    }
+
+    csv_ptr += written;
+    remaining -= written;
   }
 
   return csv;
