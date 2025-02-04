@@ -162,5 +162,38 @@ Compiler gcc 13.2
     
     ------------------------------------------------------------------
 
+### AMD EPYC 9654 96-Core Processor (2x NUMA CPUs)
+    ------------------------------------------------------------------
+    Start My Stream [MPI]
+    ------------------------------------------------------------------
+    
+    Compiler: gcc-13 (SUSE Linux) 13.2.1 20230912 [revision b96e66fd4ef3e36983969fb8cdd1956f551a074b]
+    
+    Architecture: x86_64
+    
+    User defined vector size: 10000000000
+    User defined benchmark repetitions: 20
+    
+    ------------------------------------------------------------------
+    Number of MPI processes:               192
+    Adjusted vector size:                  10000000512 elements
+    MB Vector size per process:            397.364319 MB
+    GB Vector size per process:            0.388051 GB
+    GB Total allocated memory:             298.023239 GB
+    Repetitions:                           20
+    ------------------------------------------------------------------
+    
+    Results:
+    ------------------------------------------------------------------
+    Test            Total bandwidth        clock  
+    ------------------------------------------------------------------
+    FMA:             535.350 GB/s,          556.762 ms
+    copy:            435.133 GB/s,          342.529 ms
+    axpy (TRIAD):    496.633 GB/s,          450.111 ms
+    add mul:         430.180 GB/s,          692.996 ms
+    
+    ------------------------------------------------------------------
+
+
 
 
