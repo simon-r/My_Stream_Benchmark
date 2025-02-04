@@ -11,6 +11,7 @@
 - [Intel(R) Xeon(R) Platinum 8480+ (2x NUMA CPUs)](#intelr-xeonr-platinum-8480-2x-numa-cpus)
 - [NVIDIA Grace CPU [4x NUMA CPUs]](#nvidia-grace-cpu-4x-numa-cpus)
 - [AMD EPYC 7742 64-Core (2x NUMA CPUs)](#amd-epyc-7742-64-core-2x-numa-cpus)
+- [AMD EPYC 9654 96-Core Processor (2x NUMA CPUs)](#AMD-EPYC-9654-96-Core-Processor-2x-NUMA-CPUs)
 
 ## Intel(R) Xeon(R) CPU E5-2695 v4 @ 2.10GHz (2x NUMA CPUs)
 
@@ -162,7 +163,7 @@ Compiler gcc 13.2
     
     ------------------------------------------------------------------
 
-### AMD EPYC 9654 96-Core Processor (2x NUMA CPUs)
+## AMD EPYC 9654 96-Core Processor (2x NUMA CPUs)
     ------------------------------------------------------------------
     Start My Stream [MPI]
     ------------------------------------------------------------------
