@@ -164,6 +164,7 @@ Compiler gcc 13.2
     ------------------------------------------------------------------
 
 ## AMD EPYC 9654 96-Core Processor (2x NUMA CPUs)
+
     ------------------------------------------------------------------
     Start My Stream [MPI]
     ------------------------------------------------------------------
@@ -172,28 +173,29 @@ Compiler gcc 13.2
     
     Architecture: x86_64
     
-    User defined vector size: 10000000000
-    User defined benchmark repetitions: 20
+    User defined vector size: 11000000000
+    User defined benchmark repetitions: 50
     
     ------------------------------------------------------------------
     Number of MPI processes:               192
-    Adjusted vector size:                  10000000512 elements
-    MB Vector size per process:            397.364319 MB
-    GB Vector size per process:            0.388051 GB
-    GB Total allocated memory:             298.023239 GB
-    Repetitions:                           20
+    Adjusted vector size:                  11000001024 elements
+    MB Vector size per process:            437.100769 MB
+    GB Vector size per process:            0.426856 GB
+    GB Total allocated memory:             327.825577 GB
+    Repetitions:                           50
     ------------------------------------------------------------------
     
     Results:
     ------------------------------------------------------------------
     Test            Total bandwidth        clock  
     ------------------------------------------------------------------
-    FMA:             535.350 GB/s,          556.762 ms
-    copy:            435.133 GB/s,          342.529 ms
-    axpy (TRIAD):    496.633 GB/s,          450.111 ms
-    add mul:         430.180 GB/s,          692.996 ms
+    FMA:             535.774 GB/s,          611.938 ms
+    copy:            434.315 GB/s,          377.490 ms
+    axpy (TRIAD):    496.114 GB/s,          495.642 ms
+    add mul:         427.644 GB/s,          766.802 ms
     
     ------------------------------------------------------------------
+
 
 
 
