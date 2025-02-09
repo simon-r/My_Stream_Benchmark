@@ -460,25 +460,15 @@ int main(int argc, char **argv) {
   MPI_Barrier(MPI_COMM_WORLD);
   add_mul_test(a, b, c, d, &args[rank]);
 
-  // if (rank == 0) {
-  //   for (int i = 1; i < world_size; i++) {
-  //     MPI_Recv(&args[i], sizeof(struct streams_args), MPI_CHAR, i, 0,
-  //              MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-  //   }
-  // } else {
-  //   MPI_Send(&args[rank], sizeof(struct streams_args), MPI_CHAR, 0, 0,
-  //            MPI_COMM_WORLD);
-  // }
-
-  // Gather all args from all processes to rank 0
-  MPI_Gather(&args[rank],                 // Send buffer (local args)
-             sizeof(struct streams_args), // Send count (size of one struct)
-             MPI_BYTE,                    // Send type (use BYTE for structs)
-             args, // Receive buffer (full array on rank 0)
-             sizeof(struct streams_args), // Receive count per process
-             MPI_BYTE,                    // Receive type
-             0,                           // Root process
-             MPI_COMM_WORLD);             // Communicator
+  if (rank == 0) {
+    for (int i = 1; i < world_size; i++) {
+      MPI_Recv(&args[i], sizeof(struct streams_args), MPI_CHAR, i, 0,
+               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+  } else {
+    MPI_Send(&args[rank], sizeof(struct streams_args), MPI_CHAR, 0, 0,
+             MPI_COMM_WORLD);
+  }
 
   double FMA_total_bandwidth = 0.0;
   double copy_total_bandwidth = 0.0;
